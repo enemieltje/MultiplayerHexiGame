@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Hello World</title>
+	<style>
+		* {
+			padding: 0;
+			margin: 0
+		}
+
+		table,
+		th,
+		td {
+			border: 1px solid black;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- hexi -->
+	<script src="lib/hexi.min.js"></script>
+
+	<!-- utils -->
+
+	<!-- objects -->
+
+	<!-- game -->
+
+	<!-- server selection -->
+	<h2>SomeGame</h2>
+
+	<p>available servers</p>
+	<form action="/refreshServers" method="POST">
+		<input type="submit" value="Refresh">
+	</form>
+
+	<table style="width:100%">
+		<tr>
+			<th>ServerName</th>
+			<th>Players</th>
+			<th>Ping</th>
+			<th>Join</th>
+		</tr>
+		<tr>
+			<td>NotAServer</td>
+			<td>0/2</td>
+			<td>1000000</td>
+			<td>
+				<form action="/joinServer" method="POST">
+					<input type="submit" value="Join">
+				</form>
+			</td>
+		</tr>
+	</table>
+
+	<form action="/newServer" method="POST">
+		<input type="submit" value="Create Server">
+	</form>
+</body>
+
+</html>
