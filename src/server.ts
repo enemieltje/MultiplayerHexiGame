@@ -1,3 +1,5 @@
+import {World} from "./game/server/world.ts";
+
 import
 {
 	Server,
@@ -10,7 +12,8 @@ import
 export default class HttpServer
 {
 	private server?: Server;
-	private serverArray: number[] = [];
+	private idCounter = 0;
+	private serverList: Record<number, World> = {};
 	private clientFiles = new Map<string, string>();
 
 	constructor ()
@@ -20,6 +23,12 @@ export default class HttpServer
 		// this.addClientFile("pixi.min.js");
 		// this.addClientFile("game/sprites/strawberry.png");
 		// this.addClientFile("strawberry.js");
+	}
+
+	private genId ()
+	{
+		this.idCounter++;
+		return this.idCounter;
 	}
 
 	private addClientFile (fileName: string)
@@ -64,6 +73,11 @@ export default class HttpServer
 
 	private httpGet (req: ServerRequest)
 	{
+		if (req.url == "/serverList")
+		{
+			this.returnServerList(req);
+			return;
+		}
 
 		const path = "./src/game/client";
 		let file: Uint8Array;
@@ -96,10 +110,30 @@ export default class HttpServer
 		switch (req.url)
 		{
 			case ("/newServer"):
+				this.newServer(req);
+				break;
 			default:
 				this.respond(req, 418, "index.html");
 				console.debug("unclear post request");
 		}
+	}
+
+	returnServerList (req: ServerRequest)
+	{
+		const file = `const serverList = ${JSON.stringify(this.serverList)};`;
+		req.respond({status: 200, headers: new Response().headers, body: file});
+	}
+
+	newServer (req: ServerRequest)
+	{
+		const id = this.genId();
+		const world = new World(id);
+		this.serverList[id] = world;
+		console.debug("new server created!");
+
+		const path = "./src/game/client";
+		const file = Deno.readFileSync(`${path}/game.js`);
+		req.respond({status: 200, headers: new Response().headers, body: file});
 	}
 
 	private respond (req: ServerRequest, status: number, file: string, cookieSet?: Set<Cookie>)

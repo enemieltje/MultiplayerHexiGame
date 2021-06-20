@@ -32,32 +32,40 @@
 	<h2>SomeGame</h2>
 
 	<p>available servers</p>
-	<form action="/refreshServers" method="POST">
-		<input type="submit" value="Refresh">
-	</form>
+	<script src="serverList"></script>
 
-	<table style="width:100%">
+	<table style="width:100%" id="serverTable">
 		<tr>
 			<th>ServerName</th>
 			<th>Players</th>
-			<th>Ping</th>
 			<th>Join</th>
-		</tr>
-		<tr>
-			<td>NotAServer</td>
-			<td>0/2</td>
-			<td>1000000</td>
-			<td>
-				<form action="/joinServer" method="POST">
-					<input type="submit" value="Join">
-				</form>
-			</td>
 		</tr>
 	</table>
 
 	<form action="/newServer" method="POST">
 		<input type="submit" value="Create Server">
 	</form>
+
+	<script>
+		for (server in serverList)
+		{
+			console.log(serverList[server])
+			const serverTable = document.getElementById("serverTable");
+			const row = serverTable.insertRow(-1);
+
+			var cell0 = row.insertCell(0);
+			var cell1 = row.insertCell(1);
+			var cell2 = row.insertCell(2);
+			cell0.innerHTML = serverList[server].name;
+			cell1.innerHTML = `${serverList[server].playerAmount}/2`;
+			cell2.innerHTML = "button";
+			// <form action="/joinServer" method="POST">
+			// 	<input type="submit" value="Join">
+			// </form>
+		}
+
+
+	</script>
 </body>
 
 </html>
