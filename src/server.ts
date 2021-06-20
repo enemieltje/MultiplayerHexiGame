@@ -132,7 +132,7 @@ export default class HttpServer
 		console.debug("new server created!");
 
 		const path = "./src/game/client";
-		const file = Deno.readFileSync(`${path}/game.js`);
+		const file = Deno.readFileSync(`${path}/game.html`);
 		req.respond({status: 200, headers: new Response().headers, body: file});
 	}
 

@@ -48,17 +48,17 @@ export class WebsocketHanlder
 				{
 					console.debug(`ws:Binary ${ev}`);
 				}
-				else if (isWebSocketPingEvent(ev) )
+				else if (isWebSocketPingEvent(ev))
 				{
 					const [, body] = ev;
 					console.debug(`ws:Ping ${body}`);
 				}
-				else if (isWebSocketPongEvent(ev) )
+				else if (isWebSocketPongEvent(ev))
 				{
 					const [, body] = ev;
 					console.debug(`ws:Pong ${body}`);
 				}
-				else if (isWebSocketCloseEvent(ev) )
+				else if (isWebSocketCloseEvent(ev))
 				{
 					const {code, reason} = ev;
 					console.debug(`ws:Close ${code} ${reason}`);
@@ -76,7 +76,7 @@ export class WebsocketHanlder
 		const jsonMessage = JSON.parse(ev);
 		for (const item in jsonMessage)
 		{
-			this.executeItem(item, jsonMessage[item]);
+			// this.executeItem(item, jsonMessage[item]);
 		}
 	}
 }
