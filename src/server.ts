@@ -13,12 +13,15 @@ import
 } from "../deps.ts";
 import {readAll} from "https://deno.land/std@0.95.0/io/util.ts";
 
+import Router from "./router.ts";
+
 export default class HttpServer
 {
 	private server?: Server;
 	private idCounter = 0;
 	private serverList: Record<number, World> = {};
 	private idMap = new Map<number, Date>();
+	private Router = new Router;
 	decoder = new TextDecoder();
 
 	constructor ()
@@ -38,9 +41,9 @@ export default class HttpServer
 
 	async start (port = 8080)
 	{
-
+		this.Router.setRoutes('./src/game/client', 0);
 		this.server = serve(`:${port}`);
-		console.log("running server...");
+		console.log(`HTTP webserver running. Access it at:  http://localhost:${port}/`);
 
 
 		for await (const req of this.server)
@@ -97,41 +100,29 @@ export default class HttpServer
 		}
 	}
 
-	private httpGet (req: ServerRequest)
+	private httpRequest (request: ServerRequest)
 	{
-		if (req.url == "/serverList")
-		{
-			this.returnServerList(req);
-			return;
-		}
 
-		const path = "./src/game/client";
-		let file: Uint8Array;
-		const folders = req.url.split("/");
-		const targetedFile = folders[folders.length - 1];
-		const extentionDotCount = (targetedFile.match(/\./g) || []).length;
-		const totalDotCount = (req.url.match(/\./g) || []).length;
-		try
+		switch (request.method)
 		{
-			if (req.url.includes("./") || totalDotCount > extentionDotCount)
-			{
-				file = Deno.readFileSync(`${path}/index.html`);
-				console.debug("malicious request, responded with index html");
-			}
-			else
-			{
-				file = Deno.readFileSync(`${path}/${req.url}`);
-			}
-		} catch (error)
-		{
-			file = Deno.readFileSync(`${path}/index.html`);
-			console.debug(`${path}/index.html`);
-			console.debug("file not found, responded with index html");
+			case ("GET"):
+				this.httpGetRequest(request);
+
+				break;
+			case ("POST"):
+				this.httpPostRequest(request);
+
+				break;
+			default:
+				request.respond({status: 418, body: "invalid request"});
 		}
-		this.respond(req, 200, file);
+	}
+	private httpGetRequest (request: any)
+	{
+		request.respond({status: 200, body: this.Router.resolveRoute(request.url)});
 	}
 
-	private httpPost (req: ServerRequest)
+	private httpPostRequest (req: ServerRequest)
 	{
 		switch (req.url)
 		{
