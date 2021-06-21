@@ -41,7 +41,7 @@ export default class HttpServer
 
 	async start (port = 8080)
 	{
-		this.Router.setRoutes('./src/game/client', 0);
+		this.Router.setRoutes('MultiplayerHexiGame/src/game/client', 0);
 		this.server = serve(`:${port}`);
 		console.log(`HTTP webserver running. Access it at:  http://localhost:${port}/`);
 
@@ -86,40 +86,24 @@ export default class HttpServer
 
 	private httpRequest (req: ServerRequest)
 	{
-		// console.debug(req.headers);
+
 		switch (req.method)
 		{
 			case ("GET"):
-				this.httpGet(req);
-				break;
-			case ("POST"):
-				this.httpPost(req);
-				break;
-			default:
-				req.respond({status: 418, body: "invalid request"});
-		}
-	}
-
-	private httpRequest (request: ServerRequest)
-	{
-
-		switch (request.method)
-		{
-			case ("GET"):
-				this.httpGetRequest(request);
+				this.httpGetRequest(req);
 
 				break;
 			case ("POST"):
-				this.httpPostRequest(request);
+				this.httpPostRequest(req);
 
 				break;
 			default:
-				request.respond({status: 418, body: "invalid request"});
+				req.respond({status: 418, body: "invalid req"});
 		}
 	}
-	private httpGetRequest (request: any)
+	private httpGetRequest (req: any)
 	{
-		request.respond({status: 200, body: this.Router.resolveRoute(request.url)});
+		req.respond({status: 200, body: this.Router.resolveRoute(req.url)});
 	}
 
 	private httpPostRequest (req: ServerRequest)
@@ -181,7 +165,7 @@ export default class HttpServer
 		const serverId = body.replace("serverId=", "");
 		console.debug(`serverId: ${serverId}`);
 
-		const path = "./src/game/client";
+		const path = "MultiplayerHexiGame/src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
@@ -198,7 +182,7 @@ export default class HttpServer
 		this.serverList[worldId] = world;
 		console.debug("new server created!");
 
-		const path = "./src/game/client";
+		const path = "MultiplayerHexiGame/src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};

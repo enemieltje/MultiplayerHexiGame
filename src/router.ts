@@ -37,7 +37,7 @@ export default class Router
 						pathArray.push(FregArray[0]);
 					}
 					//make url append
-					console.log(pathArray[pathArray.length - 1]);
+					//console.log(pathArray[pathArray.length - 1]);
 				}
 
 				if (regArray !== null)
@@ -46,19 +46,21 @@ export default class Router
 				};
 			};
 		};
-		console.log(this.routes);
+		//console.log(this.routes);
 	}
 	resolveRoute (url: string): string | Uint8Array
 	{
+		//FIXME: fix the regexp to use the key and not the values...
 		url = url.slice(1);
 		//console.log(url)
-
-		if (this.routes[url])
+		//console.log(Object.values(this.routes))
+		if (Object.values(this.routes).includes("MultiplayerHexiGame/src/game/client/" + url))
 		{
-			const file = Deno.readFileSync(this.routes[url]);
+			const file = Deno.readFileSync("MultiplayerHexiGame/src/game/client/" + url);
 			return file;
 		}
-		const file = Deno.readFileSync(`./src/server/html/badUrl.html`);
+		console.log("can't find " + url)
+		const file = Deno.readFileSync(`MultiplayerHexiGame/src/game/client/index.html`);
 		return file;
 	}
 }
