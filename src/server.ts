@@ -41,7 +41,7 @@ export default class HttpServer
 
 	async start (port = 8080)
 	{
-		this.Router.setRoutes('MultiplayerHexiGame/src/game/client', 0);
+		this.Router.setRoutes('./src/game/client', 0);
 		this.server = serve(`:${port}`);
 		console.log(`HTTP webserver running. Access it at:  http://localhost:${port}/`);
 
@@ -165,7 +165,7 @@ export default class HttpServer
 		const serverId = body.replace("serverId=", "");
 		console.debug(`serverId: ${serverId}`);
 
-		const path = "MultiplayerHexiGame/src/game/client";
+		const path = "./src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
@@ -182,7 +182,7 @@ export default class HttpServer
 		this.serverList[worldId] = world;
 		console.debug("new server created!");
 
-		const path = "MultiplayerHexiGame/src/game/client";
+		const path = "./src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
