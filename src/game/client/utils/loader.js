@@ -1,6 +1,6 @@
 class Loader
 {
-	static objectTypes = []; // each object class gets added here
+	static objectTypes = {}; // each object class gets added here
 	static globalSounds = []; // all filenames of sounds that do not specifically belong to an object
 
 	// load the objects and sounds
@@ -23,9 +23,9 @@ class Loader
 	static createObjects ()
 	{
 		console.log("Creating Objects");
-		Loader.objectTypes.forEach(object =>
+		Object.keys(Loader.objectTypes).forEach(objectName =>
 		{
-			object.create();
+			Loader.objectTypes[objectName].create();
 		});
 	}
 }

@@ -1,11 +1,9 @@
-let gameScene;
-
 // prepares the objects if they need that and collects the sprites and sounds hexi needs to load
 Loader.load();
 
 //Initialize and start Hexi
 const resources = GameData.gameSprites.concat(GameData.gameSounds);
-hexiGame = hexi(window.innerWidth, window.innerHeight, setup, resources, load);
+const hexiGame = hexi(window.innerWidth, window.innerHeight, setup, resources, load);
 hexiGame.scaleToWindow();
 hexiGame.start();
 
@@ -25,14 +23,8 @@ function load ()
 // here all the object instances get created and organised
 function setup ()
 {
-	// create a scene for all the objects to exist in
-	gameScene = hexiGame.group();
-
 	// create the instances of the objects
 	Loader.createObjects();
-
-	// add the player to the scene
-	GameData.getObjectFromName("playerOne").addToParent();
 
 	// Set the game state to `play` to start the game loop
 	hexiGame.state = play;
@@ -46,5 +38,5 @@ function play ()
 	GameData.frame % hexiGame.fps;
 
 	// hexi wants us to do all the gamelogic in here, but I keep most logic separated in the objects
-	GameData.getObjectFromName("player").playTick();
+	GameData.getObjectFromName("playerOne").playTick();
 }

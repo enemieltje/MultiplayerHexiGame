@@ -30,7 +30,7 @@ class Player extends GameObject
 	static create ()
 	{
 		GameData.storeObject(new Player(), "playerOne");
-		GameData.storeObject(new Player(), "playerTwo");
+		// GameData.storeObject(new Player(512), "playerTwo");
 	}
 
 	// walk thingy from hexi tutorial
@@ -100,4 +100,4 @@ class Player extends GameObject
 	}
 }
 // add the class to the objectTypes so it gets loaded
-Loader.objectTypes.push(Player);
+Loader.objectTypes.player = Player;

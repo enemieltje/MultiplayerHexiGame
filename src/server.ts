@@ -1,11 +1,14 @@
 import {World} from "./game/server/world.ts";
-
+import {WebsocketHanlder} from "./websocketHandler.ts";
 import
 {
+	acceptWebSocket,
+	acceptable,
 	Server,
 	serve,
 	ServerRequest,
 	setCookie,
+	getCookies,
 	Cookie,
 } from "../deps.ts";
 
@@ -14,7 +17,7 @@ export default class HttpServer
 	private server?: Server;
 	private idCounter = 0;
 	private serverList: Record<number, World> = {};
-	private clientFiles = new Map<string, string>();
+	private idMap = new Map<number, Date>();
 
 	constructor ()
 	{
@@ -25,17 +28,10 @@ export default class HttpServer
 		// this.addClientFile("strawberry.js");
 	}
 
-	private genId ()
+	private generateWorldId ()
 	{
 		this.idCounter++;
 		return this.idCounter;
-	}
-
-	private addClientFile (fileName: string)
-	{
-		const path = "./client";
-		const file = Deno.readTextFileSync(`${path}/${fileName}`);
-		this.clientFiles.set(fileName, file);
 	}
 
 	async start (port = 8080)
@@ -49,10 +45,41 @@ export default class HttpServer
 		{
 			console.group(`Request: ${req.method} ${req.url}`);
 
-			this.httpRequest(req);
+			if (acceptable(req))
+				this.webSocketRequest(req);
+			else
+				this.httpRequest(req);
 
 			console.groupEnd();
 		}
+	}
+
+	private async webSocketRequest (req: ServerRequest)
+	{
+		console.group("socket...");
+
+		if (this.validateId(parseInt(getCookies(req).id)))
+		{
+			console.debug("socket accepted");
+
+			const {conn, headers, r: bufReader, w: bufWriter} = req;
+			const sock = await acceptWebSocket({
+				conn,
+				headers,
+				bufReader,
+				bufWriter,
+			});
+
+			const dashboardHandler = new WebsocketHanlder(sock, getCookies(req).uuid);
+
+			// Pass the socket on here
+			// Why we make dashboardHandler if we dont use it
+
+		} else
+		{
+			console.debug("socket rejected");
+		}
+		console.groupEnd();
 	}
 
 	private httpRequest (req: ServerRequest)
@@ -102,7 +129,7 @@ export default class HttpServer
 			console.debug(`${path}/index.html`);
 			console.debug("file not found, responded with index html");
 		}
-		req.respond({status: 200, headers: new Response().headers, body: file});
+		this.respond(req, 200, file);
 	}
 
 	private httpPost (req: ServerRequest)
@@ -118,30 +145,59 @@ export default class HttpServer
 		}
 	}
 
-	returnServerList (req: ServerRequest)
+	private generateWsId (): number
 	{
-		const file = `const serverList = ${JSON.stringify(this.serverList)};`;
-		req.respond({status: 200, headers: new Response().headers, body: file});
+		// FIXME: Use ip?
+		const id = Date.now(); //maybe not use time here...
+		this.idMap.set(id, new Date());
+		return id;
 	}
 
-	newServer (req: ServerRequest)
+	private validateId (id: number): boolean
 	{
-		const id = this.genId();
-		const world = new World(id);
-		this.serverList[id] = world;
+		console.group(`Validating ${id}...`);
+		if (this.idMap.has(id))
+		{
+			console.debug("id exists");
+			if ((this.idMap.get(id) as Date).getTime() > Date.now() - 10000)
+			{
+				console.debug("id valid!");
+				console.groupEnd();
+				return true;
+			} else
+			{
+				console.debug("outdated");
+				this.idMap.delete(id);
+			}
+		}
+		console.debug("id invalid");
+		console.groupEnd();
+		return false;
+	}
+
+	private returnServerList (req: ServerRequest)
+	{
+		const file = `const serverList = ${JSON.stringify(this.serverList)};`;
+		this.respond(req, 200, file);
+	}
+
+	private newServer (req: ServerRequest)
+	{
+		const worldId = this.generateWorldId();
+		const world = new World(worldId);
+		this.serverList[worldId] = world;
 		console.debug("new server created!");
 
 		const path = "./src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
-		req.respond({status: 200, headers: new Response().headers, body: file});
+		const cookieSet = new Set<Cookie>();
+		const cookie: Cookie = {name: "id", value: this.generateWsId() + "", maxAge: 10};
+		cookieSet.add(cookie);
+		this.respond(req, 200, file, cookieSet);
 	}
 
-	private respond (req: ServerRequest, status: number, file: string, cookieSet?: Set<Cookie>)
+	private respond (req: ServerRequest, status: number, file: string | Uint8Array, cookieSet?: Set<Cookie>)
 	{
-
-		if (this.clientFiles.get(file))
-			file = this.clientFiles.get(file) as string;
-
 		const response: Response = new Response();
 		if (cookieSet)
 		{
