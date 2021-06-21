@@ -1,21 +1,33 @@
 class WebSocketHandler
 {
+	static functionBuffer = [];
+
+	static executeBuffer ()
+	{
+		this.functionBuffer.forEach((message, i) =>
+		{
+			socket.send(JSON.stringify(message));
+			delete this.functionBuffer[i];
+		});
+	}
+
 	static handleSocketMessage (ev)
 	{
 		ev = JSON.parse(ev.data);
-		ev = ev.response;
-		ev.forEach((obj) =>
+
+		console.log(`socket message received:`);
+		console.log(JSON.stringify(ev));
+
+		Object.keys(ev).forEach((functionName) =>
 		{
-			const key = Object.keys(obj)[0];
-			const test = obj[key];
-			console.log(`socket message received: ${test}`);
-			switch (key)
+			const data = ev[functionName];
+			switch (functionName)
 			{
 				case "update":
-					WebSocketHandler.handleUpdate(obj);
+					WebSocketHandler.handleUpdate(data);
 					break;
 				case "create":
-					WebSocketHandler.handleCreation(obj);
+					WebSocketHandler.handleCreation(data);
 					break;
 				default:
 					console.log("no response");
@@ -34,27 +46,28 @@ class WebSocketHandler
 				"vy": vy
 			}
 		};
-		socket.send(JSON.stringify(message));
+		socket.readyState === WebSocket.OPEN ? socket.send(JSON.stringify(message)) : this.functionBuffer.push(message);
 	}
 
 	static sendCreate (objectType, name, x, y)
 	{
 		const message = {
 			"create": {
+				"type": "singleObject",
 				"objectType": objectType,
 				"objectName": name,
 				"x": x,
 				"y": y
 			}
 		};
-		socket.send(JSON.stringify(message));
+
+		socket.readyState === WebSocket.OPEN ? socket.send(JSON.stringify(message)) : this.functionBuffer.push(message);
 	}
 
 	static handleUpdate (message)
 	{
 		if (!message.type) return;
 
-		console.log(`type: ${message.type}`);
 		switch (message.type)
 		{
 			case "speed":
@@ -85,13 +98,14 @@ class WebSocketHandler
 	static createSingleObject (type, name, x, y)
 	{
 		const instance = new Loader.objectTypes[type]();
-		instance.hexiObject.x = x;
-		instance.hexiObject.y = y;
+		if (x) instance.hexiObject.x = x;
+		if (y) instance.hexiObject.y = y;
 		GameData.storeObject(instance, name);
 	}
 
 	static speedUpdate (objectId, vx, vy)
 	{
+		if (!GameData.getObjectFromId(objectId)) return;
 		const hexiObject = GameData.getObjectFromId(objectId).hexiObject;
 		hexiObject.vx = vx;
 		hexiObject.vy = vy;
@@ -103,3 +117,8 @@ const socket = new WebSocket('ws:localhost:8186');
 
 // add the listener
 socket.addEventListener("message", WebSocketHandler.handleSocketMessage);
+socket.onopen = function (_ev)
+{
+	console.log("WebSocket is open now.");
+	WebSocketHandler.executeBuffer();
+};

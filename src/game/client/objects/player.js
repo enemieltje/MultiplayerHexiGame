@@ -9,7 +9,8 @@ class Player extends GameObject
 	constructor ()
 	{
 		super("strawberry.png");
-		this.hexiObject.setPosition(256, 256);
+		let xpos = GameData.getObjectArrayFromName("playerOne").length * 256 + 256;
+		this.hexiObject.setPosition(xpos, 256);
 		this.defineMovementKeys();
 	}
 
@@ -30,6 +31,7 @@ class Player extends GameObject
 	static create ()
 	{
 		GameData.storeObject(new Player(), "playerOne");
+		WebSocketHandler.sendCreate("player", "playerOne");
 		// GameData.storeObject(new Player(512), "playerTwo");
 	}
 
@@ -41,7 +43,7 @@ class Player extends GameObject
 		{
 			//Change the player's velocity when the key is pressed
 			this.hexiObject.vx = -5;
-			this.hexiObject.vy = 0;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 
 		//Left arrow key `release` method
@@ -50,52 +52,56 @@ class Player extends GameObject
 			//If the left arrow has been released, and the right arrow isn't down,
 			//and the player isn't moving vertically:
 			//Stop the player
-			if (!this.walkRight.isDown && this.hexiObject.vy === 0)
+			if (!this.walkRight.isDown)
 			{
 				this.hexiObject.vx = 0;
-			}
+			} else this.hexiObject.vx = 5;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 
 		//The up arrow
 		this.walkUp.press = () =>
 		{
 			this.hexiObject.vy = -5;
-			this.hexiObject.vx = 0;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 		this.walkUp.release = () =>
 		{
-			if (!this.walkDown.isDown && this.hexiObject.vx === 0)
+			if (!this.walkDown.isDown)
 			{
 				this.hexiObject.vy = 0;
-			}
+			} else this.hexiObject.vy = 5;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 
 		//The right arrow
 		this.walkRight.press = () =>
 		{
 			this.hexiObject.vx = 5;
-			this.hexiObject.vy = 0;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 		this.walkRight.release = () =>
 		{
-			if (!this.walkLeft.isDown && this.hexiObject.vy === 0)
+			if (!this.walkLeft.isDown)
 			{
 				this.hexiObject.vx = 0;
-			}
+			} else this.hexiObject.vx = -5;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 
 		//The down arrow
 		this.walkDown.press = () =>
 		{
 			this.hexiObject.vy = 5;
-			this.hexiObject.vx = 0;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 		this.walkDown.release = () =>
 		{
-			if (!this.walkUp.isDown && this.hexiObject.vx === 0)
+			if (!this.walkUp.isDown)
 			{
 				this.hexiObject.vy = 0;
-			}
+			} else this.hexiObject.vy = -5;
+			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
 		};
 	}
 }

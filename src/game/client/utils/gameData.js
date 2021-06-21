@@ -57,7 +57,11 @@ class GameData
 	 */
 	static getObjectArrayFromName (name)
 	{
-		if (!this.nameIdMap[name]) console.log(`tried to get object ${name} that does not exist`);
+		if (!this.nameIdMap[name])
+		{
+			console.log(`tried to get object ${name} that does not exist`);
+			return [];
+		}
 
 		const objectArray = [];
 		this.nameIdMap[name].forEach((id) =>

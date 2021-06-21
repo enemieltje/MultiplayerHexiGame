@@ -7,9 +7,9 @@ class Loader
 	static load ()
 	{
 		console.log("Loading Objects");
-		Loader.objectTypes.forEach(object =>
+		Object.keys(Loader.objectTypes).forEach(objectName =>
 		{
-			object.onLoad();
+			Loader.objectTypes[objectName].onLoad();
 		});
 
 		console.log("Loading global Sounds");

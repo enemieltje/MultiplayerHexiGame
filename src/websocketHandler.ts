@@ -9,7 +9,7 @@ import
 export class WebsocketHanlder
 {
 	private websocket: WebSocket;
-	private userId: string;
+	private serverId: number;
 
 	/**
 	 * Handles a dashboard of one specific logged in user
@@ -17,20 +17,11 @@ export class WebsocketHanlder
 	 * @param userId id of the user that logged in to this dashboard
 	 * @param pluginLoader the pluginLoader that contains the plugins available to logged in users
 	 */
-	constructor (acceptedSocket: WebSocket, userId: string)
+	constructor (acceptedSocket: WebSocket, serverId: number)
 	{
+		this.serverId = serverId;
 		this.websocket = acceptedSocket;
-		this.userId = userId;
 		this.listenToSocket();
-	}
-
-	/**
-	 *
-	 * @returns userID
-	 */
-	getUserId ()
-	{
-		return this.userId;
 	}
 
 	private async listenToSocket ()

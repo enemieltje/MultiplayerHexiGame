@@ -11,6 +11,7 @@ import
 	getCookies,
 	Cookie,
 } from "../deps.ts";
+import {readAll} from "https://deno.land/std@0.95.0/io/util.ts";
 
 export default class HttpServer
 {
@@ -18,6 +19,7 @@ export default class HttpServer
 	private idCounter = 0;
 	private serverList: Record<number, World> = {};
 	private idMap = new Map<number, Date>();
+	decoder = new TextDecoder();
 
 	constructor ()
 	{
@@ -58,7 +60,7 @@ export default class HttpServer
 	{
 		console.group("socket...");
 
-		if (this.validateId(parseInt(getCookies(req).id)))
+		if (this.validateId(parseInt(getCookies(req).websocketId)))
 		{
 			console.debug("socket accepted");
 
@@ -69,13 +71,10 @@ export default class HttpServer
 				bufReader,
 				bufWriter,
 			});
-
-			const dashboardHandler = new WebsocketHanlder(sock, getCookies(req).uuid);
-
-			// Pass the socket on here
-			// Why we make dashboardHandler if we dont use it
-
-		} else
+			const serverId = parseInt(getCookies(req).serverId);
+			this.serverList[serverId].addSocket(sock);
+		}
+		else
 		{
 			console.debug("socket rejected");
 		}
@@ -136,6 +135,9 @@ export default class HttpServer
 	{
 		switch (req.url)
 		{
+			case ("/join"):
+				this.joinServer(req);
+				break;
 			case ("/newServer"):
 				this.newServer(req);
 				break;
@@ -181,6 +183,23 @@ export default class HttpServer
 		this.respond(req, 200, file);
 	}
 
+	private async joinServer (req: ServerRequest)
+	{
+		const uint8ArrayBody: Uint8Array = await readAll(req.body);
+		const body = this.decoder.decode(uint8ArrayBody);
+		const serverId = body.replace("serverId=", "");
+		console.debug(`serverId: ${serverId}`);
+
+		const path = "./src/game/client";
+		const file = Deno.readFileSync(`${path}/game.html`);
+		const cookieSet = new Set<Cookie>();
+		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
+		const serverIdCookie: Cookie = {name: "serverId", value: serverId + "", maxAge: 10};
+		cookieSet.add(websocketIdCookie);
+		cookieSet.add(serverIdCookie);
+		this.respond(req, 200, file, cookieSet);
+	}
+
 	private newServer (req: ServerRequest)
 	{
 		const worldId = this.generateWorldId();
@@ -191,8 +210,10 @@ export default class HttpServer
 		const path = "./src/game/client";
 		const file = Deno.readFileSync(`${path}/game.html`);
 		const cookieSet = new Set<Cookie>();
-		const cookie: Cookie = {name: "id", value: this.generateWsId() + "", maxAge: 10};
-		cookieSet.add(cookie);
+		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
+		const serverIdCookie: Cookie = {name: "serverId", value: worldId + "", maxAge: 10};
+		cookieSet.add(websocketIdCookie);
+		cookieSet.add(serverIdCookie);
 		this.respond(req, 200, file, cookieSet);
 	}
 
