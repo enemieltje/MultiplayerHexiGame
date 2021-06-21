@@ -1,10 +1,12 @@
 class GameObject
 {
+	name;
 	hexiObject; // the object hexi uses for physics
 	id = GameData.genId(); // the id the gamedata uses to identify instances
 
-	constructor (texture)
+	constructor (texture, name)
 	{
+		this.name = name;
 		// create a hexiObject with the default sprite
 		this.hexiObject = hexiGame.sprite(`sprites/${texture}`);
 	}

@@ -1,5 +1,4 @@
 import {World} from "./game/server/world.ts";
-import {WebsocketHanlder} from "./websocketHandler.ts";
 import
 {
 	acceptWebSocket,
@@ -72,6 +71,7 @@ export default class HttpServer
 				bufWriter,
 			});
 			const serverId = parseInt(getCookies(req).serverId);
+			console.debug(`Socket added to server ${serverId}`);
 			this.serverList[serverId].addSocket(sock);
 		}
 		else

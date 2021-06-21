@@ -71,6 +71,11 @@ class GameData
 		return objectArray;
 	}
 
+	static deleteObjectFromId (objectId)
+	{
+		delete this.gameObjects[objectId];
+	}
+
 	/**
 	 * add a sprite to be loaded by hexi
 	 */

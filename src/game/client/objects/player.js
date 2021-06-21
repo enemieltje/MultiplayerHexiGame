@@ -6,12 +6,13 @@ class Player extends GameObject
 	walkRight = hexiGame.keyboard(39);
 	walkDown = hexiGame.keyboard(40);
 
-	constructor ()
+	constructor (isController)
 	{
-		super("strawberry.png");
-		let xpos = GameData.getObjectArrayFromName("playerOne").length * 256 + 256;
+		super("strawberry.png", "player");
+		const xpos = GameData.getObjectArrayFromName("player").length * 256 + 256;
 		this.hexiObject.setPosition(xpos, 256);
-		this.defineMovementKeys();
+		if (isController)
+			this.defineMovementKeys();
 	}
 
 	// the game tick in the play state
@@ -30,9 +31,9 @@ class Player extends GameObject
 	// create the instances
 	static create ()
 	{
-		GameData.storeObject(new Player(), "playerOne");
-		WebSocketHandler.sendCreate("player", "playerOne");
-		// GameData.storeObject(new Player(512), "playerTwo");
+		// if (GameData.getObjectArrayFromName("player").length > 1)
+		GameData.storeObject(new Player(true), "player");
+		WebSocketHandler.sendCreate("Player", "player");
 	}
 
 	// walk thingy from hexi tutorial
@@ -106,4 +107,4 @@ class Player extends GameObject
 	}
 }
 // add the class to the objectTypes so it gets loaded
-Loader.objectTypes.player = Player;
+Loader.objectTypes.Player = Player;

@@ -25,6 +25,7 @@ function setup ()
 {
 	// create the instances of the objects
 	Loader.createObjects();
+	WebSocketHandler.sendDownloadRequest();
 
 	// Set the game state to `play` to start the game loop
 	hexiGame.state = play;
@@ -38,5 +39,8 @@ function play ()
 	GameData.frame % hexiGame.fps;
 
 	// hexi wants us to do all the gamelogic in here, but I keep most logic separated in the objects
-	GameData.getObjectFromName("playerOne").playTick();
+	GameData.getObjectArrayFromName("player").forEach((player) =>
+	{
+		player.playTick();
+	});
 }
