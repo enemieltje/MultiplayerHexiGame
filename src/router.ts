@@ -54,13 +54,13 @@ export default class Router
 		url = url.slice(1);
 		//console.log(url)
 		//console.log(Object.values(this.routes))
-		if (Object.values(this.routes).includes("MultiplayerHexiGame/src/game/client/" + url))
+		if (Object.values(this.routes).includes("./src/game/client/" + url))
 		{
-			const file = Deno.readFileSync("MultiplayerHexiGame/src/game/client/" + url);
+			const file = Deno.readFileSync("./src/game/client/" + url);
 			return file;
 		}
 		console.log("can't find " + url)
-		const file = Deno.readFileSync(`MultiplayerHexiGame/src/game/client/index.html`);
+		const file = Deno.readFileSync(`./src/game/client/index.html`);
 		return file;
 	}
 }
