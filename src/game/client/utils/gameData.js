@@ -1,39 +1,50 @@
 class GameData
 {
-	static gameObjects = {};
-	static nameIdMap = {};
-	static planetIdArray = [];
+	static gameObjects = {}; // a map of all instances <objectId: number, instance: Object>
+	static nameIdMap = {}; // a map of objects that have a name so they're easier to find <instanceName: string, objectId: number>
 
-	static gameChunks = {};
-
-	static gameSprites = [];
-	static spriteOffsets = {};
+	static gameSprites = []; // all spritenames that hexi needs to load
+	static gameSounds = []; // all soundnames that hexi needs to load
 
 	static idGeneratorId = 0;
 
 	static frame = 0;
 
+	/**
+	 * generates a unique number to be used as an id for object instances
+	 */
 	static genId ()
 	{
 		this.idGeneratorId++;
 		return this.idGeneratorId;
 	}
 
+	/**
+	 * stores an object in the gameObjects, so it can be found later
+	 * @param {Object} object instance of a gameObject
+	 * @param {String} name the name to find this object with, does not need to be unique
+	 */
 	static storeObject (object, name)
 	{
-		// const id = this.genId();
-		// object.id = id;
 		this.gameObjects[object.id] = object;
 
 		this.nameIdMap[name] ? this.nameIdMap[name].push(object.id) : this.nameIdMap[name] = [object.id];
 		return object.id;
 	}
 
+	/**
+	 * get an instance of a game object by id
+	 */
 	static getObjectFromId (id)
 	{
 		return this.gameObjects[id];
 	}
 
+	/**
+	 * get an instance of a game object by name
+	 * @param {string} name - the name of the instance
+	 * @param {number} index - optional, if more objects have the same name, use this index to identify which one you want
+	 */
 	static getObjectFromName (name, index = 0)
 	{
 		if (!this.nameIdMap[name]) console.log(`tried to get object ${name} that does not exist`);
@@ -41,6 +52,9 @@ class GameData
 		return this.getObjectFromId(this.nameIdMap[name][index]);
 	}
 
+	/**
+	 * get all instances with the same name
+	 */
 	static getObjectArrayFromName (name)
 	{
 		if (!this.nameIdMap[name]) console.log(`tried to get object ${name} that does not exist`);
@@ -53,85 +67,19 @@ class GameData
 		return objectArray;
 	}
 
-	// static putObjectInChunk (id, coord)
-	// {
-	// 	const chunk = this.gameChunks[coord.str()];
-	// 	chunk ? chunk.add(id) : this.gameChunks[coord.str()] = new Set([id]);
-	// }
-
-	// static removeObjectFromChunk (id, coord)
-	// {
-	// 	if (this.gameChunks[coord.str()])
-	// 		delete this.gameChunks[coord.str()][id];
-	// }
-
-	// static getObjectsInChunk (coord)
-	// {
-	// 	return this.gameChunks[coord.str()];
-	// }
-
+	/**
+	 * add a sprite to be loaded by hexi
+	 */
 	static addSprite (name)
 	{
 		this.gameSprites.push(`sprites/${name}`);
 	}
 
-	// static getSpriteOffset (name)
-	// {
-	// 	const offset = this.spriteOffsets[name];
-	// 	if (offset)
-	// 	{
-	// 		return offset;
-	// 	} else
-	// 	{
-	// 		return Complex.ZERO;
-	// 	}
-	// }
-
-	// static setSpriteOffset (name, x, y)
-	// {
-	// 	this.spriteOffsets[name] = new Complex(x, y);
-	// }
-
-	// static loadSprites ()
-	// {
-	// 	Object.keys(app.loader.resources).forEach(spritePath =>
-	// 	{
-	// 		console.log(spritePath);
-	// 		const type = spritePath.split(".")[1];
-	// 		if (type == "json")
-	// 		{
-	// 			this.gameSprites[spritePath] = [];
-	// 			const tilesetObject = app.loader.resources[spritePath].textures;
-
-	// 			Object.keys(tilesetObject).forEach(image =>
-	// 			{
-	// 				this.gameSprites[spritePath].push(tilesetObject[image]);
-	// 			});
-	// 		}
-	// 		else
-	// 			this.gameSprites[spritePath] = [app.loader.resources[spritePath].texture];
-	// 	});
-	// }
-
-	// static updateAllChunks ()
-	// {
-	// 	Object.keys(this.gameObjects).forEach(id =>
-	// 	{
-	// 		if (!this.gameObjects[id].updateChunk) return;
-	// 		this.gameObjects[id].updateChunk();
-	// 	});
-	// }
-
-	// static setGravityObject (id)
-	// {
-	// 	this.planetIdArray.push(id);
-	// }
-
-	// static forEachGravityObject (func)
-	// {
-	// 	this.planetIdArray.forEach((id) =>
-	// 	{
-	// 		func(this.getObjectFromId(id));
-	// 	});
-	// }
+	/**
+	 * add a sound to be loaded by hexi
+	 */
+	static addSound (name)
+	{
+		this.gameSprites.push(`sounds/${name}`);
+	}
 }

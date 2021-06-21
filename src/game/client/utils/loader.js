@@ -1,106 +1,31 @@
 class Loader
 {
-	// will be done automatically for each object file
-	// static objectTypes = [Strawberry, Ready, Background, Block, Planet];
-	static objectTypes = [];
+	static objectTypes = []; // each object class gets added here
+	static globalSounds = []; // all filenames of sounds that do not specifically belong to an object
 
-	static spritesReady = false;
-	static soundsReady = true;
-	static ready = false;
-
-	/**
-	 * calls the onLoad function for each Type of object
-	 * @returns void
-	 */
+	// load the objects and sounds
 	static load ()
 	{
-		// const style = new PIXI.TextStyle({
-		// 	fontSize: 12,
-		// 	fill: "white",
-		// });
-		// GameData.debugScreen = new PIXI.Text("", style);
-
-		return new Promise((resolve) =>
-		{
-			Loader.loadSprites().then(() =>
-			{
-				resolve();
-				// if (Loader.soundsReady) resolve();
-			});
-
-			// Loader.loadSounds().then(() =>
-			// {
-			// 	if (Loader.spritesReady) resolve();
-			// });
-		});
-	}
-
-	// static loadSounds ()
-	// {
-	// 	return new Promise(resolve =>
-	// 	{
-	// 		const soundArray = [];
-	// 		const path = "sounds";
-
-	// 		Loader.objectTypes.forEach(object =>
-	// 		{
-	// 			if (!object.soundFiles) return;
-	// 			object.soundFiles.forEach(sound =>
-	// 			{
-	// 				soundArray.push(`${path}/${sound}`);
-	// 			});
-	// 		});
-
-	// 		sounds.load(soundArray);
-
-	// 		sounds.onProgress = (progress, res) =>
-	// 		{
-	// 			console.log('File ' + res.url + ' just finished loading.');
-	// 			console.log(progress + '% done');
-	// 		};
-
-	// 		sounds.whenLoaded = () =>
-	// 		{
-	// 			Loader.soundsReady = true;
-	// 			resolve();
-	// 			Loader.init();
-	// 		};
-	// 	});
-	// }
-
-	static loadSprites ()
-	{
-		console.log("Loading Sprites");
-		return new Promise(resolve =>
-		{
-			Loader.objectTypes.forEach(object =>
-			{
-				object.onLoad();
-			});
-			resolve();
-		});
-	}
-
-	static createSprites ()
-	{
-		console.log("Creating Sprites");
-
-		// GameData.loadSprites();
+		console.log("Loading Objects");
 		Loader.objectTypes.forEach(object =>
 		{
-			console.log(`creating ${object.name}`);
-			object.create();
+			object.onLoad();
 		});
 
-		console.log("Sprites finished creating");
-		Loader.spritesReady = true;
-		Loader.init();
+		console.log("Loading global Sounds");
+		Loader.globalSounds.forEach(sound =>
+		{
+			GameData.addSound(sound);
+		});
 	}
 
-	static init ()
+	// create instances of the objects
+	static createObjects ()
 	{
-		if (!Loader.spritesReady || !Loader.soundsReady) return;
-
-		Loader.ready = true;
+		console.log("Creating Objects");
+		Loader.objectTypes.forEach(object =>
+		{
+			object.create();
+		});
 	}
 }

@@ -1,5 +1,6 @@
 class Player extends GameObject
 {
+	// keyboardkeys by ascii
 	walkLeft = hexiGame.keyboard(37);
 	walkUp = hexiGame.keyboard(38);
 	walkRight = hexiGame.keyboard(39);
@@ -8,25 +9,31 @@ class Player extends GameObject
 	constructor ()
 	{
 		super("strawberry.png");
+		this.hexiObject.setPosition(256, 256);
 		this.defineMovementKeys();
 	}
 
+	// the game tick in the play state
 	playTick ()
 	{
-
+		// let hexi move the object according to the speed
 		hexiGame.move(this.hexiObject);
 	}
 
+	// add all the spritenames that need to be loaded
 	static onLoad ()
 	{
 		super.onLoad(["strawberry.png"]);
 	}
 
+	// create the instances
 	static create ()
 	{
-		GameData.storeObject(new Player(), "player");
+		GameData.storeObject(new Player(), "playerOne");
+		GameData.storeObject(new Player(), "playerTwo");
 	}
 
+	// walk thingy from hexi tutorial
 	defineMovementKeys ()
 	{
 		//Left arrow key `press` method
@@ -92,4 +99,5 @@ class Player extends GameObject
 		};
 	}
 }
+// add the class to the objectTypes so it gets loaded
 Loader.objectTypes.push(Player);
