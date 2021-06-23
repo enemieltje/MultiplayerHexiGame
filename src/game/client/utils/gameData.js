@@ -1,7 +1,7 @@
 class GameData
 {
-	static gameObjects = {}; // a map of all instances <objectId: number, instance: Object>
-	static nameIdMap = {}; // a map of objects that have a name so they're easier to find <instanceName: string, objectId: number>
+	static gameObjects = {}; // a map of all instances <objectId: uuid, instance: Object>
+	static nameIdMap = {}; // a map of objects that have a name so they're easier to find <instanceName: string, objectId: uuid>
 
 	static gameSprites = []; // all spritenames that hexi needs to load
 	static gameSounds = []; // all soundnames that hexi needs to load
@@ -11,12 +11,16 @@ class GameData
 	static frame = 0;
 
 	/**
-	 * generates a unique number to be used as an id for object instances
+	 * generates an id to be used as an id for object instances.
+	 * Not explicitly unique, but random enough to say it is
 	 */
 	static genId ()
 	{
-		this.idGeneratorId++;
-		return this.idGeneratorId;
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c)
+		{
+			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
 	}
 
 	/**
@@ -26,10 +30,11 @@ class GameData
 	 */
 	static storeObject (object, name)
 	{
+		const texture = object.texture || "empty.png";
+		object.hexiObject = hexiGame.sprite(`sprites/${texture}`);
 		this.gameObjects[object.id] = object;
 
 		this.nameIdMap[name] ? this.nameIdMap[name].push(object.id) : this.nameIdMap[name] = [object.id];
-		return object.id;
 	}
 
 	/**
@@ -73,6 +78,7 @@ class GameData
 
 	static deleteObjectFromId (objectId)
 	{
+		this.gameObjects[objectId].hexiObject.remove();
 		delete this.gameObjects[objectId];
 	}
 

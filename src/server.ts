@@ -103,6 +103,11 @@ export default class HttpServer
 	}
 	private httpGetRequest (req: any)
 	{
+		if (req.url == "/serverList")
+		{
+			this.returnServerList(req);
+			return;
+		}
 		req.respond({status: 200, body: this.Router.resolveRoute(req.url)});
 	}
 
@@ -166,7 +171,7 @@ export default class HttpServer
 		console.debug(`serverId: ${serverId}`);
 
 		const path = "./src/game/client";
-		const file = Deno.readFileSync(`${path}/game.html`);
+		const file = Deno.readFileSync(`${path}/join.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
 		const serverIdCookie: Cookie = {name: "serverId", value: serverId + "", maxAge: 10};
@@ -183,7 +188,7 @@ export default class HttpServer
 		console.debug("new server created!");
 
 		const path = "./src/game/client";
-		const file = Deno.readFileSync(`${path}/game.html`);
+		const file = Deno.readFileSync(`${path}/host.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
 		const serverIdCookie: Cookie = {name: "serverId", value: worldId + "", maxAge: 10};

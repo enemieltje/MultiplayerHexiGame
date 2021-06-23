@@ -25,21 +25,30 @@ function setup ()
 {
 	// create the instances of the objects
 	Loader.createObjects();
-	WebSocketHandler.sendDownloadRequest();
+
+	GameData.getObjectFromName("player").defineMovementKeys();
 
 	// Set the game state to `play` to start the game loop
 	hexiGame.state = play;
 }
 
+function createObject (type, name)
+{
+	const object = new Loader.objectTypes[type]();
+	GameData.storeObject(object, name);
+	WebSocketHandler.sendObjectsUpdate(object.id);
+	return object;
+}
+
 // the play gameloop; this function runs every tick while the game is in play state
-function play ()
+async function play ()
 {
 	// update the frame number in the gamedata
 	GameData.frame++;
 	GameData.frame % hexiGame.fps;
 
 	// hexi wants us to do all the gamelogic in here, but I keep most logic separated in the objects
-	GameData.getObjectArrayFromName("player").forEach((player) =>
+	(await GameData.getObjectArrayFromName("player")).forEach((player) =>
 	{
 		player.playTick();
 	});

@@ -1,18 +1,16 @@
 class Player extends GameObject
 {
+	texture = "strawberry.png";
+
 	// keyboardkeys by ascii
 	walkLeft = hexiGame.keyboard(37);
 	walkUp = hexiGame.keyboard(38);
 	walkRight = hexiGame.keyboard(39);
 	walkDown = hexiGame.keyboard(40);
 
-	constructor (isController)
+	constructor ()
 	{
-		super("strawberry.png", "player");
-		const xpos = GameData.getObjectArrayFromName("player").length * 256 + 256;
-		this.hexiObject.setPosition(xpos, 256);
-		if (isController)
-			this.defineMovementKeys();
+		super("player");
 	}
 
 	// the game tick in the play state
@@ -33,10 +31,10 @@ class Player extends GameObject
 	{
 		// if (GameData.getObjectArrayFromName("player").length > 1)
 		GameData.storeObject(new Player(true), "player");
-		WebSocketHandler.sendCreate("Player", "player");
+		// WebSocketHandler.sendCreate("Player", "player");
 	}
 
-	// walk thingy from hexi tutorial
+	// modified walk thingy from hexi tutorial
 	defineMovementKeys ()
 	{
 		//Left arrow key `press` method
@@ -44,7 +42,7 @@ class Player extends GameObject
 		{
 			//Change the player's velocity when the key is pressed
 			this.hexiObject.vx = -5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//Left arrow key `release` method
@@ -57,14 +55,14 @@ class Player extends GameObject
 			{
 				this.hexiObject.vx = 0;
 			} else this.hexiObject.vx = 5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The up arrow
 		this.walkUp.press = () =>
 		{
 			this.hexiObject.vy = -5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkUp.release = () =>
 		{
@@ -72,14 +70,14 @@ class Player extends GameObject
 			{
 				this.hexiObject.vy = 0;
 			} else this.hexiObject.vy = 5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The right arrow
 		this.walkRight.press = () =>
 		{
 			this.hexiObject.vx = 5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkRight.release = () =>
 		{
@@ -87,14 +85,14 @@ class Player extends GameObject
 			{
 				this.hexiObject.vx = 0;
 			} else this.hexiObject.vx = -5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The down arrow
 		this.walkDown.press = () =>
 		{
 			this.hexiObject.vy = 5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkDown.release = () =>
 		{
@@ -102,7 +100,7 @@ class Player extends GameObject
 			{
 				this.hexiObject.vy = 0;
 			} else this.hexiObject.vy = -5;
-			WebSocketHandler.sendUpdate(this.id, this.hexiObject.vx, this.hexiObject.vy);
+			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 	}
 }
