@@ -35,6 +35,9 @@ class Player extends GameObject
 	}
 
 	// modified walk thingy from hexi tutorial
+	/**
+	 * initialise the keys used to control the player
+	 */
 	defineMovementKeys ()
 	{
 		//Left arrow key `press` method

@@ -3,7 +3,9 @@ class Loader
 	static objectTypes = {}; // each object class gets added here
 	static globalSounds = []; // all filenames of sounds that do not specifically belong to an object
 
-	// load the objects and sounds
+	/**
+	 * load the objects and sounds
+	 */
 	static load ()
 	{
 		console.log("Loading Objects");
@@ -19,7 +21,9 @@ class Loader
 		});
 	}
 
-	// create instances of the objects
+	/**
+	 * create instances of the objects as they should be present at the start of the game
+	 */
 	static createObjects ()
 	{
 		console.log("Creating Objects");

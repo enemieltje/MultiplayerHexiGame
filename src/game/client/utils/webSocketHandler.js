@@ -1,18 +1,20 @@
 class WebSocketHandler
 {
-	static functionBuffer = [];
-	static responseBuffer = [];
-	static token = 0;
+	static messageBuffer = []; // a buffer of all the messages sent before the websocket was open
 
+	// send all the messages from the buffer
 	static executeBuffer ()
 	{
-		this.functionBuffer.forEach((message, i) =>
+		this.messageBuffer.forEach((message, i) =>
 		{
 			socket.send(JSON.stringify(message));
-			delete this.functionBuffer[i];
+			delete this.messageBuffer[i];
 		});
 	}
 
+	/**
+	 * sends a request to download all the objects in the world already
+	 */
 	static sendWorldRequest ()
 	{
 		const message = {
@@ -21,6 +23,10 @@ class WebSocketHandler
 		this.send(message);
 	}
 
+	/**
+	 * sends the data of a gameObject to the other players
+	 * @param {uuid | uuid[]} objectIdArray objects to be sent
+	 */
 	static sendObjectsUpdate (objectIdArray = Object.keys(GameData.gameObjects))
 	{
 		if (!Array.isArray(objectIdArray)) objectIdArray = [objectIdArray];
@@ -37,6 +43,11 @@ class WebSocketHandler
 		this.send(message);
 	}
 
+	/**
+	 * collects the data from an object and puts it in the right format to be sent over the socket
+	 * @param {uuid} objectId id of the gameObject to get the data from
+	 * @returns
+	 */
 	static getMessageObject (objectId)
 	{
 		const object = GameData.getObjectFromId(objectId);
@@ -53,6 +64,10 @@ class WebSocketHandler
 		};
 	}
 
+	/**
+	 * updates the current gameObjects to the new versions received over a websocket
+	 * @param {Record<uuid, messageObject>} objectList jsObject containing data about gameObjects
+	 */
 	static updateObjects (objectList)
 	{
 		Object.keys(objectList).forEach((objectId) =>
@@ -81,6 +96,10 @@ class WebSocketHandler
 		});
 	}
 
+	/**
+	 * creates a new gameObject from a messageObject
+	 * @param {messageObject} messageObject data of a gameObject that has been sent over a websocket
+	 */
 	static createNewObject (messageObject)
 	{
 		const newObject = new Loader.objectTypes[messageObject.type]();
@@ -94,6 +113,10 @@ class WebSocketHandler
 		});
 	}
 
+	/**
+	 * sends the messages received over the sockets to the functions that can handle them
+	 * @param {JSON} ev socketMessage
+	 */
 	static handleSocketMessage (ev)
 	{
 		ev = JSON.parse(ev.data);
@@ -115,16 +138,21 @@ class WebSocketHandler
 		}
 	}
 
+	/**
+	 * sends an object over the websocket or saves it if the websocket is not open yet
+	 * @param {jsObject} message object to be sent over the websocket
+	 */
 	static send (message)
 	{
 		console.log(`socket message sent:`);
 		console.log(message);
-		socket.readyState === WebSocket.OPEN ? socket.send(JSON.stringify(message)) : this.functionBuffer.push(message);
+		socket.readyState === WebSocket.OPEN ? socket.send(JSON.stringify(message)) : this.messageBuffer.push(message);
 	}
 }
 
 // create websocket
-const socket = new WebSocket('ws:localhost:8080');
+console.log(window.location.href.split("/")[2]);
+const socket = new WebSocket(`ws://${window.location.href.split("/")[2]}`);
 
 // add the listener
 socket.addEventListener("message", WebSocketHandler.handleSocketMessage);

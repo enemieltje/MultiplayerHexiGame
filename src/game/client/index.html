@@ -55,11 +55,6 @@
 			cell0.innerHTML = serverList[serverId].name;
 			cell1.innerHTML = `${serverList[serverId].playerAmount}/2`;
 
-			// var button = document.createElement("button");
-			// button.id = serverId;
-			// button.onclick = (ev) => {join(ev.srcElement.id)};
-			// button.appendChild(document.createTextNode("Join"));
-
 			var form = document.createElement("form");
 			form.id = serverId;
 			form.action = "/join";

@@ -9,7 +9,7 @@ import
 export class World
 {
 	private name = "new world";
-	private socketList: WebSocket[] = [];
+	private socketList: Record<number, WebSocket> = {};
 	private id: number;
 	private refresh = false;
 
@@ -22,11 +22,19 @@ export class World
 
 	addSocket (socket: WebSocket)
 	{
-		const index = this.socketList.length;
-		this.socketList.push(socket);
-		this.playerAmount = this.socketList.length;
+		let index = Object.keys(this.socketList).length;
+		while (Object.keys(this.socketList).includes(index + ""))
+			index++;
+		this.socketList[index] = (socket);
+		this.playerAmount = Object.keys(this.socketList).length;
 		this.listenToSocket(socket, index);
 		console.debug(`socket ${index} received`);
+	}
+
+	private removeSocket (index: number)
+	{
+		delete this.socketList[index];
+		this.playerAmount = Object.keys(this.socketList).length;
 	}
 
 	private async listenToSocket (sock: WebSocket, index: number)
@@ -58,7 +66,9 @@ export class World
 				else if (isWebSocketCloseEvent(ev))
 				{
 					const {code, reason} = ev;
+					this.removeSocket(index);
 					console.debug(`ws:Close ${code} ${reason}`);
+					return;
 				}
 
 				if (this.refresh)
@@ -84,9 +94,10 @@ export class World
 			return;
 		}
 
-		this.socketList.forEach((sock, index) =>
+		Object.keys(this.socketList).forEach((index) =>
 		{
-			if (index == sourceIndex) return;
+			const sock = this.socketList[index as unknown as number];
+			if (index as unknown as number == sourceIndex as unknown as number) return;
 			console.debug(`sending data: ${ev}`);
 			sock.send(ev);
 		});
