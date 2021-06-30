@@ -1,6 +1,6 @@
 export default class Router
 {
-
+	private path = "./src/game/client";
 	private routes: Record<string, string>;
 	constructor ()
 	{
@@ -12,7 +12,6 @@ export default class Router
 	{
 		for await (const dirEntry of Deno.readDir(path))
 		{
-
 			//check if its a directory
 			if (dirEntry.isDirectory && subDir == 0)
 			{
@@ -37,16 +36,20 @@ export default class Router
 						pathArray.push(FregArray[0]);
 					}
 					//make url append
-					//console.log(pathArray[pathArray.length - 1]);
+					// console.log(pathArray[pathArray.length - 1]);
 				}
 
 				if (regArray !== null)
 				{
-					this.routes[regArray[0]] = path + "/" + dirname;
+					const subname = dirname.split(".");
+					if (subname[subname.length - 1] == "map")
+						this.routes[regArray[0] + ".map"] = path + "/" + dirname;
+					else
+						this.routes[regArray[0]] = path + "/" + dirname;
 				};
 			};
 		};
-		//console.log(this.routes);
+		// console.log(this.routes);
 	}
 	resolveRoute (url: string): string | Uint8Array
 	{
@@ -54,13 +57,14 @@ export default class Router
 		url = url.slice(1);
 		//console.log(url)
 		//console.log(Object.values(this.routes))
-		if (Object.values(this.routes).includes("./src/game/client/" + url))
+		if (Object.values(this.routes).includes(`${this.path}/${url}`))
 		{
-			const file = Deno.readFileSync("./src/game/client/" + url);
+			const file = Deno.readFileSync(`${this.path}/${url}`);
 			return file;
 		}
-		console.log("can't find " + url)
-		const file = Deno.readFileSync(`./src/game/client/index.html`);
+		console.log("can't find " + url);
+		console.log(`${this.path}/index.html`);
+		const file = Deno.readFileSync(`${this.path}/index.html`);
 		return file;
 	}
 }

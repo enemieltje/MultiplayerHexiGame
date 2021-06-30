@@ -1,10 +1,13 @@
-class GameData
-{
-	static gameObjects = {}; // a map of all instances <objectId: uuid, instance: Object>
-	static nameIdMap = {}; // a map of objects that have a name so they're easier to find <instanceName: string, objectId: uuid>
+import {GameObject, uuid, hexiGame, worldData} from "./deps.ts";
 
-	static gameSprites = []; // all spritenames that hexi needs to load
-	static gameSounds = []; // all soundnames that hexi needs to load
+export class GameData
+{
+	static gameObjects: Record<uuid, GameObject> = {}; // a map of all instances <objectId: uuid, instance: Object>
+	static nameIdMap: Record<string, uuid[]> = {}; // a map of objects that have a name so they're easier to find <instanceName: string, objectId: uuid>
+
+	static gameSprites: string[] = []; // all spritenames that hexi needs to load
+	static gameSounds: string[] = []; // all soundnames that hexi needs to load
+	static worldData: worldData;
 
 	static idGeneratorId = 0;
 
@@ -14,7 +17,7 @@ class GameData
 	 * generates an id to be used as an id for object instances.
 	 * Not explicitly unique, but random enough to say it is
 	 */
-	static genId ()
+	static genId (): uuid
 	{
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c)
 		{
@@ -28,19 +31,27 @@ class GameData
 	 * @param {Object} object instance of a gameObject
 	 * @param {String} name the name to find this object with, does not need to be unique
 	 */
-	static storeObject (object, name)
+	static storeObject (object: GameObject, name: string)
 	{
 		const texture = object.texture || "empty.png";
-		object.hexiObject = hexiGame.sprite(`sprites/${texture}`);
+		if (Array.isArray(texture))
+		{
+			object.hexiObject = hexiGame.sprite(texture);
+		} else
+		{
+			const path = object.useTileset ? texture : `sprites/${texture}`;
+			object.hexiObject = hexiGame.sprite(path);
+		}
 		this.gameObjects[object.id] = object;
 
 		this.nameIdMap[name] ? this.nameIdMap[name].push(object.id) : this.nameIdMap[name] = [object.id];
+		return object;
 	}
 
 	/**
 	 * get an instance of a game object by id
 	 */
-	static getObjectFromId (id)
+	static getObjectFromId (id: uuid)
 	{
 		return this.gameObjects[id];
 	}
@@ -50,7 +61,7 @@ class GameData
 	 * @param {string} name - the name of the instance
 	 * @param {number} index - optional, if more objects have the same name, use this index to identify which one you want
 	 */
-	static getObjectFromName (name, index = 0)
+	static getObjectFromName (name: string, index = 0)
 	{
 		if (!this.nameIdMap[name]) console.log(`tried to get object ${name} that does not exist`);
 
@@ -60,7 +71,7 @@ class GameData
 	/**
 	 * get all instances with the same name
 	 */
-	static getObjectArrayFromName (name)
+	static getObjectArrayFromName (name: string)
 	{
 		if (!this.nameIdMap[name])
 		{
@@ -68,7 +79,7 @@ class GameData
 			return [];
 		}
 
-		const objectArray = [];
+		const objectArray: GameObject[] = [];
 		this.nameIdMap[name].forEach((id) =>
 		{
 			objectArray.push(this.getObjectFromId(id));
@@ -76,16 +87,17 @@ class GameData
 		return objectArray;
 	}
 
-	static deleteObjectFromId (objectId)
+	static deleteObjectFromId (objectId: uuid)
 	{
-		this.gameObjects[objectId].hexiObject.remove();
+		const hexiObject = this.gameObjects[objectId].hexiObject;
+		if (hexiObject) hexiObject.remove();
 		delete this.gameObjects[objectId];
 	}
 
 	/**
 	 * add a sprite to be loaded by hexi
 	 */
-	static addSprite (name)
+	static addSprite (name: string)
 	{
 		this.gameSprites.push(`sprites/${name}`);
 	}
@@ -93,8 +105,15 @@ class GameData
 	/**
 	 * add a sound to be loaded by hexi
 	 */
-	static addSound (name)
+	static addSound (name: string)
 	{
 		this.gameSprites.push(`sounds/${name}`);
+	}
+
+	static getBlock (x: number, y: number)
+	{
+		if (x < 0 || x > 15 || y < 0 || y > 15) return "Air";
+		const index = this.worldData.data[y][x];
+		return this.worldData.map[index];
 	}
 }

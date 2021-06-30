@@ -1,12 +1,16 @@
-class Player extends GameObject
+import {GameObject, hexiGame, GameData, WebSocketHandler, Loader} from "../utils/deps.ts";
+
+export class Player extends GameObject
 {
 	texture = "strawberry.png";
+	// declare hexiObject;
+	// declare id;
 
 	// keyboardkeys by ascii
-	walkLeft = hexiGame.keyboard(37);
-	walkUp = hexiGame.keyboard(38);
-	walkRight = hexiGame.keyboard(39);
-	walkDown = hexiGame.keyboard(40);
+	private walkLeft = hexiGame.keyboard(37);
+	private walkUp = hexiGame.keyboard(38);
+	private walkRight = hexiGame.keyboard(39);
+	private walkDown = hexiGame.keyboard(40);
 
 	constructor ()
 	{
@@ -29,9 +33,7 @@ class Player extends GameObject
 	// create the instances
 	static create ()
 	{
-		// if (GameData.getObjectArrayFromName("player").length > 1)
-		GameData.storeObject(new Player(true), "player");
-		// WebSocketHandler.sendCreate("Player", "player");
+		GameData.storeObject(new Player(), "player");
 	}
 
 	// modified walk thingy from hexi tutorial
@@ -54,55 +56,62 @@ class Player extends GameObject
 			//If the left arrow has been released, and the right arrow isn't down,
 			//and the player isn't moving vertically:
 			//Stop the player
-			if (!this.walkRight.isDown)
-			{
-				this.hexiObject.vx = 0;
-			} else this.hexiObject.vx = 5;
+			if (this.hexiObject)
+				if (!this.walkRight.isDown)
+				{
+					this.hexiObject.vx = 0;
+				} else this.hexiObject.vx = 5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The up arrow
 		this.walkUp.press = () =>
 		{
-			this.hexiObject.vy = -5;
+			if (this.hexiObject)
+				this.hexiObject.vy = -5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkUp.release = () =>
 		{
-			if (!this.walkDown.isDown)
-			{
-				this.hexiObject.vy = 0;
-			} else this.hexiObject.vy = 5;
+			if (this.hexiObject)
+				if (!this.walkDown.isDown)
+				{
+					this.hexiObject.vy = 0;
+				} else this.hexiObject.vy = 5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The right arrow
 		this.walkRight.press = () =>
 		{
-			this.hexiObject.vx = 5;
+			if (this.hexiObject)
+				this.hexiObject.vx = 5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkRight.release = () =>
 		{
-			if (!this.walkLeft.isDown)
-			{
-				this.hexiObject.vx = 0;
-			} else this.hexiObject.vx = -5;
+			if (this.hexiObject)
+				if (!this.walkLeft.isDown)
+				{
+					this.hexiObject.vx = 0;
+				} else this.hexiObject.vx = -5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 
 		//The down arrow
 		this.walkDown.press = () =>
 		{
-			this.hexiObject.vy = 5;
+			if (this.hexiObject)
+				this.hexiObject.vy = 5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 		this.walkDown.release = () =>
 		{
-			if (!this.walkUp.isDown)
-			{
-				this.hexiObject.vy = 0;
-			} else this.hexiObject.vy = -5;
+			if (this.hexiObject)
+				if (!this.walkUp.isDown)
+				{
+					this.hexiObject.vy = 0;
+				} else this.hexiObject.vy = -5;
 			WebSocketHandler.sendObjectsUpdate(this.id);
 		};
 	}

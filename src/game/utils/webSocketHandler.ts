@@ -1,6 +1,36 @@
-class WebSocketHandler
+import {GameData, uuid, Loader, worldData} from "./deps.ts";
+
+export type WsMessage = objectWsMessage | worldWsMessage | serverWsMessage | worldDataWsMessage;
+
+export type serverWsMessage = {
+	messageType: "server",
+	name: string;
+};
+
+export type objectWsMessage = {
+	messageType: "object",
+	data: Record<uuid, objectData>;
+};
+
+export type worldDataWsMessage = {
+	messageType: "worldData",
+	data: worldData;
+};
+
+export type worldWsMessage = {
+	messageType: "world";
+};
+
+export type objectData = {
+	id: uuid,
+	name: string,
+	type: string,
+	data: Record<string, unknown>;
+};
+
+export class WebSocketHandler
 {
-	static messageBuffer = []; // a buffer of all the messages sent before the websocket was open
+	static messageBuffer: WsMessage[] = []; // a buffer of all the messages sent before the websocket was open
 
 	// send all the messages from the buffer
 	static executeBuffer ()
@@ -10,6 +40,19 @@ class WebSocketHandler
 			socket.send(JSON.stringify(message));
 			delete this.messageBuffer[i];
 		});
+		WebSocketHandler.sendServerRequest("world");
+	}
+
+	/**
+	 * sends a request to download all the objects in the world already
+	 */
+	static sendServerRequest (name: string)
+	{
+		const message: serverWsMessage = {
+			messageType: "server",
+			name: name
+		};
+		this.send(message);
 	}
 
 	/**
@@ -17,7 +60,7 @@ class WebSocketHandler
 	 */
 	static sendWorldRequest ()
 	{
-		const message = {
+		const message: worldWsMessage = {
 			messageType: "world"
 		};
 		this.send(message);
@@ -27,19 +70,22 @@ class WebSocketHandler
 	 * sends the data of a gameObject to the other players
 	 * @param {uuid | uuid[]} objectIdArray objects to be sent
 	 */
-	static sendObjectsUpdate (objectIdArray = Object.keys(GameData.gameObjects))
+	static sendObjectsUpdate (objectIdArray: uuid | uuid[] = Object.keys(GameData.gameObjects))
 	{
 		if (!Array.isArray(objectIdArray)) objectIdArray = [objectIdArray];
 
-		const message = {
-			messageType: "object",
-			data: {}
-		};
+
+		const data: Record<string, objectData> = {};
 		console.log(`sending objectsUpdate on: ${objectIdArray}`);
 		objectIdArray.forEach((objectId) =>
 		{
-			message.data[objectId] = this.getMessageObject(objectId);
+			data[objectId] = this.getMessageObject(objectId);
 		});
+
+		const message: objectWsMessage = {
+			messageType: "object",
+			data: data
+		};
 		this.send(message);
 	}
 
@@ -48,13 +94,13 @@ class WebSocketHandler
 	 * @param {uuid} objectId id of the gameObject to get the data from
 	 * @returns
 	 */
-	static getMessageObject (objectId)
+	static getMessageObject (objectId: uuid): objectData
 	{
 		const object = GameData.getObjectFromId(objectId);
-		return {
+		const data: objectData = {
 			id: objectId,
 			name: object.name,
-			type: object.__proto__.constructor.name,
+			type: object.constructor.name,
 			data: {
 				x: object.hexiObject.x,
 				y: object.hexiObject.y,
@@ -62,36 +108,37 @@ class WebSocketHandler
 				vy: object.hexiObject.vy
 			}
 		};
+		return data;
 	}
 
 	/**
 	 * updates the current gameObjects to the new versions received over a websocket
 	 * @param {Record<uuid, messageObject>} objectList jsObject containing data about gameObjects
 	 */
-	static updateObjects (objectList)
+	static updateObjects (objectList: Record<uuid, objectData>)
 	{
 		Object.keys(objectList).forEach((objectId) =>
 		{
-			const messageObject = objectList[objectId];
+			const objectData = objectList[objectId];
 
 			if (Object.keys(GameData.gameObjects).includes(objectId))
 			{
 				const localObject = GameData.getObjectFromId(objectId);
-				if (localObject.name == messageObject.name &&
-					localObject.__proto__.constructor.name == messageObject.type)
+				if (localObject.name == objectData.name &&
+					localObject.constructor.name == objectData.type)
 				{
-					Object.keys(messageObject.data).forEach((key) =>
+					Object.keys(objectData.data).forEach((key) =>
 					{
-						localObject.hexiObject[key] = messageObject.data[key];
+						localObject.hexiObject[key] = objectData.data[key];
 					});
 				} else
 				{
 					GameData.deleteObjectFromId(objectId);
-					this.createNewObject(messageObject);
+					this.createNewObject(objectData);
 				}
 			} else
 			{
-				this.createNewObject(messageObject);
+				this.createNewObject(objectData);
 			}
 		});
 	}
@@ -100,7 +147,7 @@ class WebSocketHandler
 	 * creates a new gameObject from a messageObject
 	 * @param {messageObject} messageObject data of a gameObject that has been sent over a websocket
 	 */
-	static createNewObject (messageObject)
+	static createNewObject (messageObject: objectData)
 	{
 		const newObject = new Loader.objectTypes[messageObject.type]();
 		newObject.id = messageObject.id;
@@ -117,20 +164,23 @@ class WebSocketHandler
 	 * sends the messages received over the sockets to the functions that can handle them
 	 * @param {JSON} ev socketMessage
 	 */
-	static handleSocketMessage (ev)
+	static handleSocketMessage (ev: {data: string;})
 	{
-		ev = JSON.parse(ev.data);
+		const message = JSON.parse(ev.data) as WsMessage;
 
 		console.log(`socket message received:`);
-		console.log(ev);
+		console.log(message);
 
-		switch (ev.messageType)
+		switch (message.messageType)
 		{
 			case "object":
-				WebSocketHandler.updateObjects(ev.data);
+				WebSocketHandler.updateObjects(message.data);
 				break;
 			case "world":
 				WebSocketHandler.sendObjectsUpdate();
+				break;
+			case "worldData":
+				Loader.loadWorld(message.data);
 				break;
 			default:
 				console.log("no response");
@@ -142,7 +192,7 @@ class WebSocketHandler
 	 * sends an object over the websocket or saves it if the websocket is not open yet
 	 * @param {jsObject} message object to be sent over the websocket
 	 */
-	static send (message)
+	static send (message: WsMessage)
 	{
 		console.log(`socket message sent:`);
 		console.log(message);

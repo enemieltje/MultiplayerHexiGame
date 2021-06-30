@@ -25,11 +25,6 @@ export default class HttpServer
 
 	constructor ()
 	{
-		// this.addClientFile("images/strawberry.png");
-		// this.addClientFile("index.html");
-		// this.addClientFile("pixi.min.js");
-		// this.addClientFile("game/sprites/strawberry.png");
-		// this.addClientFile("strawberry.js");
 	}
 
 	private generateWorldId ()
@@ -37,6 +32,7 @@ export default class HttpServer
 		this.idCounter++;
 		return this.idCounter;
 	}
+
 
 	async start (port = 8080)
 	{

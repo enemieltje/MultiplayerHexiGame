@@ -89,8 +89,7 @@ export class World
 		const evData = JSON.parse(ev);
 		if (evData.messageType == "server")
 		{
-			console.debug(`got serverMessage: ${evData}`);
-			// this.handleDataRequest(evData.data, sourceIndex);
+			this.returnWorld(this.socketList[sourceIndex], evData.name as string);
 			return;
 		}
 
@@ -101,5 +100,16 @@ export class World
 			console.debug(`sending data: ${ev}`);
 			sock.send(ev);
 		});
+	}
+	private returnWorld (sock: WebSocket, name: string)
+	{
+		const path = `./src/game/server/data/${name}.json`;
+		console.debug(`reading file ${path}`);
+		const file = Deno.readTextFileSync(path);
+		const message = {
+			messageType: "worldData",
+			data: JSON.parse(file)
+		};
+		sock.send(JSON.stringify(message));
 	}
 }

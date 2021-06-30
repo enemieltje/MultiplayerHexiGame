@@ -1,9 +1,21 @@
+import
+{
+	GameObject,
+	Loader,
+	GameData,
+	WebSocketHandler,
+	JS,
+	Player,
+	Dirt
+	// @ts-ignore
+} from "./utils/deps.ts";
+
 // prepares the objects if they need that and collects the sprites and sounds hexi needs to load
 Loader.load();
 
 //Initialize and start Hexi
 const resources = GameData.gameSprites.concat(GameData.gameSounds);
-const hexiGame = hexi(window.innerWidth, window.innerHeight, setup, resources, load);
+export const hexiGame = JS.hexi(JS.window.innerWidth, JS.window.innerHeight, setup, resources, load);
 hexiGame.scaleToWindow();
 hexiGame.start();
 
@@ -24,17 +36,24 @@ function load ()
 function setup ()
 {
 	// create the instances of the objects
-	if (ISHOST)
+	if (JS.isHost)
 	{
 		Loader.createObjects();
+		// GameData.getObjectFromName("dirt").hexiObject.x = 256;
+		// GameData.getObjectFromName("dirt").hexiObject.y = 256;
 
-		GameData.getObjectFromName("player").defineMovementKeys();
+		(GameData.getObjectFromName("player") as Player).defineMovementKeys();
 	} else
 	{
 		WebSocketHandler.sendWorldRequest();
 
-		createObject("Player", "player").defineMovementKeys();
+		(createObject("Player", "player") as Player).defineMovementKeys();
 	}
+
+	(GameData.getObjectArrayFromName("worldDirt") as Dirt[]).forEach((dirt: Dirt) =>
+	{
+		// dirt.updateSprite();
+	});
 
 	// Set the game state to `play` to start the game loop
 	hexiGame.state = play;
@@ -46,7 +65,7 @@ function setup ()
  * @param {string} name - the name to store it in the gameData with
  * @returns the object created
  */
-function createObject (type, name)
+function createObject (type: string, name: string)
 {
 	const object = new Loader.objectTypes[type]();
 	GameData.storeObject(object, name);
@@ -62,7 +81,7 @@ function play ()
 	GameData.frame % hexiGame.fps;
 
 	// hexi wants us to do all the gamelogic in here, but I keep most logic separated in the objects
-	(GameData.getObjectArrayFromName("player")).forEach((player) =>
+	(GameData.getObjectArrayFromName("player")).forEach((player: GameObject) =>
 	{
 		player.playTick();
 	});
