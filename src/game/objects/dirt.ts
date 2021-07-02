@@ -1,55 +1,53 @@
-import {GameObject, GameData, Loader} from "../utils/deps.ts";
+import {TileObject, Loader, objectType} from "../utils/deps.ts";
 
-export class Dirt extends GameObject
+export class Dirt extends TileObject
 {
-	x = 0;
-	y = 0;
-	map = [15, 14, 3, 2, 12, 13, 0, 1, 11, 10, 7, 6, 8, 9, 4, 5];
+	// map = [15, 14, 3, 2, 12, 13, 0, 1, 11, 10, 7, 6, 8, 9, 4, 5];
+	type: objectType = "Dirt";
 
 	constructor ()
 	{
-		super("dirt");
-		this.useTileset = true;
-		this.doubleSize();
-
-		this.texture = [];
+		const texture = [];
 		for (let i = 0; i < 16; i++)
 		{
-			this.texture.push(`dirt${i}.png`);
+			texture.push(`dirt${i}.png`);
 		}
+		super("dirt", texture);
+		// this.useTileset = true;
+		// this.doubleSize();
 	}
 
-	public updateSprite ()
-	{
-		let binary = "";
-		binary += GameData.getBlock(this.x, this.y - 1) == "Dirt" ? "1" : "0";
-		binary += GameData.getBlock(this.x + 1, this.y) == "Dirt" ? "1" : "0";
-		binary += GameData.getBlock(this.x, this.y + 1) == "Dirt" ? "1" : "0";
-		binary += GameData.getBlock(this.x - 1, this.y) == "Dirt" ? "1" : "0";
+	// public updateSprite ()
+	// {
+	// 	let binary = "";
+	// 	binary += GameData.getBlock(this.x, this.y - 1) == "Dirt" ? "1" : "0";
+	// 	binary += GameData.getBlock(this.x + 1, this.y) == "Dirt" ? "1" : "0";
+	// 	binary += GameData.getBlock(this.x, this.y + 1) == "Dirt" ? "1" : "0";
+	// 	binary += GameData.getBlock(this.x - 1, this.y) == "Dirt" ? "1" : "0";
 
-		const dec = parseInt(binary, 2);
-		let index = this.map[dec];
-		if (index === undefined) index = dec;
-		this.hexiObject.show(index);
-	}
+	// 	const dec = parseInt(binary, 2);
+	// 	let index = this.map[dec];
+	// 	if (index === undefined) index = dec;
+	// 	(this.hexiObject).show(index);
+	// }
 
-	doubleSize (id?: number)
-	{
-		if (!this.hexiObject || !this.hexiObject.scale)
-		{
-			const id = setInterval(() => {this.doubleSize(id);}, 100);
-			return;
-		}
-		clearInterval(id);
-		this.hexiObject.scale = {x: 2, y: 2};
-		this.updateSprite();
-	}
+	// doubleSize (_id?: number)
+	// {
+	// 	// if (!this.hexiObject || !this.hexiObject.scale)
+	// 	// {
+	// 	// 	const id = setInterval(() => {this.doubleSize(id);}, 100);
+	// 	// 	return;
+	// 	// }
+	// 	// clearInterval(id);
+	// 	this.hexiObject.scale = {x: 2, y: 2};
+	// 	this.updateSprite();
+	// }
 
 	// the game tick in the play state
 	playTick ()
 	{
 		// let hexi move the object according to the speed
-		// hexiGame.move(this.hexiObject);
+		// hexiGame.move((await this.hexiObject));
 	}
 
 	// add all the spritenames that need to be loaded

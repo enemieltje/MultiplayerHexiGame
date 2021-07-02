@@ -1,4 +1,4 @@
-import {GameData, uuid, Loader, worldData} from "./deps.ts";
+import {GameData, uuid, Loader, worldData, objectType, objectCategory} from "./deps.ts";
 
 export type WsMessage = objectWsMessage | worldWsMessage | serverWsMessage | worldDataWsMessage;
 
@@ -24,7 +24,8 @@ export type worldWsMessage = {
 export type objectData = {
 	id: uuid,
 	name: string,
-	type: string,
+	type: objectType,
+	category: objectCategory,
 	data: Record<string, unknown>;
 };
 
@@ -76,7 +77,7 @@ export class WebSocketHandler
 
 
 		const data: Record<string, objectData> = {};
-		console.log(`sending objectsUpdate on: ${objectIdArray}`);
+		console.log(`sending objectsUpdate on ${objectIdArray.length} objects`);
 		objectIdArray.forEach((objectId) =>
 		{
 			data[objectId] = this.getMessageObject(objectId);
@@ -100,7 +101,8 @@ export class WebSocketHandler
 		const data: objectData = {
 			id: objectId,
 			name: object.name,
-			type: object.constructor.name,
+			type: object.type,
+			category: object.category,
 			data: {
 				x: object.hexiObject.x,
 				y: object.hexiObject.y,

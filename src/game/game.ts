@@ -5,7 +5,9 @@ import
 	GameData,
 	WebSocketHandler,
 	JS,
-	Player
+	Player,
+	objectType,
+	TileObject
 } from "./utils/deps.ts";
 
 export let hexiGame: any;
@@ -78,7 +80,7 @@ export class Game
 	 * @param {string} name - the name to store it in the gameData with
 	 * @returns the object created
 	 */
-	static createObject (type: string, name: string)
+	static createObject (type: objectType, name: string)
 	{
 		const object = new Loader.objectTypes[type]();
 		GameData.storeObject(object, name);
@@ -98,6 +100,11 @@ export class Game
 		{
 			player.playTick();
 		});
+
+		GameData.getObjectArray("tileObject").forEach((tileObject: GameObject) =>
+		{
+			(tileObject as TileObject).updateSprite();
+		});
 	}
 
 	static mapEditor ()
@@ -109,5 +116,10 @@ export class Game
 
 		Game.mouseObject.hexiObject.x = hexiGame.pointer.x;
 		Game.mouseObject.hexiObject.y = hexiGame.pointer.y;
+
+		GameData.getObjectArray("tileObject").forEach((tileObject: GameObject) =>
+		{
+			(tileObject as TileObject).updateSprite();
+		});
 	}
 }

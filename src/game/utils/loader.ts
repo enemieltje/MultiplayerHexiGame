@@ -1,8 +1,8 @@
-import {GameObject, GameData, worldData, Dirt} from "./deps.ts";
+import {GameObject, GameData, worldData, TileObject, objectType} from "./deps.ts";
 
 export class Loader
 {
-	static objectTypes: Record<string, typeof GameObject> = {}; // each object class gets added here
+	static objectTypes: Record<objectType, typeof GameObject> = <Record<objectType, typeof GameObject>> {}; // each object class gets added here
 	static globalSounds = []; // all filenames of sounds that do not specifically belong to an object
 	static gridSize = {x: 32, y: 32};
 
@@ -12,7 +12,7 @@ export class Loader
 	static load ()
 	{
 		console.log("Loading Objects");
-		Object.keys(Loader.objectTypes).forEach((objectName: string) =>
+		(Object.keys(Loader.objectTypes) as objectType[]).forEach((objectName: objectType) =>
 		{
 			Loader.objectTypes[objectName].onLoad();
 		});
@@ -30,7 +30,7 @@ export class Loader
 	static createObjects ()
 	{
 		console.log("Creating Objects");
-		Object.keys(Loader.objectTypes).forEach(objectName =>
+		(Object.keys(Loader.objectTypes) as objectType[]).forEach(objectName =>
 		{
 			Loader.objectTypes[objectName].create();
 		});
@@ -48,7 +48,7 @@ export class Loader
 	 * executes a function for each object in the worldData
 	 * @param func function to be executed for each object
 	 */
-	static loop (func: (type: string, x: number, y: number) => void)
+	static loop (func: (type: objectType, x: number, y: number) => void)
 	{
 		if (!GameData.worldData) return;
 
@@ -61,14 +61,14 @@ export class Loader
 		});
 	}
 
-	static exec (type: string, x: number, y: number)
+	static exec (type: objectType, x: number, y: number)
 	{
-		if (type == "Air") return;
+		if (type == "") return;
 		if (!Loader.objectTypes[type]) return;
-		const obj = GameData.storeObject(new Loader.objectTypes[type](), `world${type}`) as Dirt;
+		const obj = new Loader.objectTypes[type]() as TileObject;
 		obj.hexiObject.x = x * Loader.gridSize.x;
 		obj.hexiObject.y = y * Loader.gridSize.y;
-		obj.x = x;
-		obj.y = y;
+		obj.updateSprite();
+		GameData.storeObject(obj, `world${type}`);
 	}
 }

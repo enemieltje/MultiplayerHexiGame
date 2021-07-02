@@ -1,12 +1,13 @@
 export {GameData} from "./gameData.ts";
 export {Loader} from "./loader.ts";
 export {WebSocketHandler} from "./webSocketHandler.ts";
-export {GameObject} from "./baseObjects.ts";
+export {GameObject, TileObject} from "./baseObjects.ts";
 export {JS} from "../client/conversion.js";
 export {Player} from "../objects/player.ts";
 export {Dirt} from "../objects/dirt.ts";
 export {hexiGame, Game} from "../game.ts";
-// export {loadMapEditor, setupMapEditor} from "../mapEditor.ts";
+import type {objectCategory, objectType} from "./baseObjects.ts";
+export type {objectCategory, objectType};
 
 export type uuid = string;
 export type hexiObject = hexiData & Record<string, unknown>;
@@ -21,7 +22,7 @@ type hexiData = {
 };
 
 export type worldData = {
-	map: string[],
+	map: objectType[],
 	data: number[][];
 };
 
