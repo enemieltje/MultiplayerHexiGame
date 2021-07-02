@@ -104,7 +104,7 @@ export class World
 	private returnWorld (sock: WebSocket, name: string)
 	{
 		const path = `./src/game/server/data/${name}.json`;
-		console.debug(`reading file ${path}`);
+		console.debug(`reading string ${path}`);
 		const file = Deno.readTextFileSync(path);
 		const message = {
 			messageType: "worldData",

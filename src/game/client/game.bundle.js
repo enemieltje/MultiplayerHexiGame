@@ -1,3 +1,4 @@
+let hexiGame1;
 class GameData {
     static gameObjects = {
     };
@@ -221,9 +222,9 @@ class GameObject {
     id = "";
     texture;
     useTileset = false;
-    constructor(name = ""){
+    constructor(name1 = ""){
         this.id = this.genId();
-        this.name = name;
+        this.name = name1;
     }
     genId() {
         return GameData.genId();
@@ -312,7 +313,6 @@ class Player extends GameObject {
         };
     }
 }
-Loader.objectTypes.Player = Player;
 class Dirt extends GameObject {
     x = 0;
     y = 0;
@@ -344,13 +344,6 @@ class Dirt extends GameObject {
         }
     }
     updateSprite() {
-        const blockArray = [
-            GameData.getBlock(this.x, this.y - 1) == "Dirt",
-            GameData.getBlock(this.x + 1, this.y) == "Dirt",
-            GameData.getBlock(this.x, this.y + 1) == "Dirt",
-            GameData.getBlock(this.x - 1, this.y) == "Dirt"
-        ];
-        console.log(blockArray);
         let binary = "";
         binary += GameData.getBlock(this.x, this.y - 1) == "Dirt" ? "1" : "0";
         binary += GameData.getBlock(this.x + 1, this.y) == "Dirt" ? "1" : "0";
@@ -385,30 +378,56 @@ class Dirt extends GameObject {
     static create() {
     }
 }
+Loader.objectTypes.Player = Player;
 Loader.objectTypes.Dirt = Dirt;
-Loader.load();
-const resources = GameData.gameSprites.concat(GameData.gameSounds);
-const hexiGame1 = JS.hexi(JS.window.innerWidth, JS.window.innerHeight, setup, resources, load);
-hexiGame1.scaleToWindow();
-hexiGame1.start();
-function load() {
-    console.log(`loading: ${hexiGame1.loadingFile}`);
-    console.log(`progress: ${hexiGame1.loadingProgress}`);
-    hexiGame1.loadingBar();
-}
-function setup() {
-    if (JS.isHost) {
+class Game1 {
+    static mouseObject;
+    static startGame(setupFunction) {
+        Loader.load();
+        const resources = GameData.gameSprites.concat(GameData.gameSounds);
+        hexiGame1 = JS.hexi(JS.window.innerWidth, JS.window.innerHeight, setupFunction, resources, this.load);
+        hexiGame1.scaleToWindow();
+        hexiGame1.start();
+    }
+    static load() {
+        console.log(`loading: ${hexiGame1.loadingFile}`);
+        console.log(`progress: ${hexiGame1.loadingProgress}`);
+        hexiGame1.loadingBar();
+    }
+    static setupHost() {
         Loader.createObjects();
         GameData.getObjectFromName("player").defineMovementKeys();
-    } else {
-        WebSocketHandler.sendWorldRequest();
-        createObject("Player", "player").defineMovementKeys();
+        hexiGame1.state = Game1.play;
     }
-    GameData.getObjectArrayFromName("worldDirt").forEach((dirt)=>{
-    });
-    hexiGame1.state = play;
+    static setupJoin() {
+        WebSocketHandler.sendWorldRequest();
+        Game1.createObject("Player", "player").defineMovementKeys();
+        hexiGame1.state = Game1.play;
+    }
+    static setupMapEditor() {
+        Game1.mouseObject = Game1.createObject("Dirt", "mouseObject");
+        hexiGame1.state = Game1.mapEditor;
+    }
+    static createObject(type, name) {
+        const object = new Loader.objectTypes[type]();
+        GameData.storeObject(object, name);
+        WebSocketHandler.sendObjectsUpdate(object.id);
+        return object;
+    }
+    static play() {
+        GameData.frame++;
+        GameData.frame % hexiGame1.fps;
+        GameData.getObjectArrayFromName("player").forEach((player)=>{
+            player.playTick();
+        });
+    }
+    static mapEditor() {
+        GameData.frame++;
+        GameData.frame % hexiGame1.fps;
+        Game1.mouseObject.hexiObject.x = hexiGame1.pointer.x;
+        Game1.mouseObject.hexiObject.y = hexiGame1.pointer.y;
+    }
 }
-
 console.log(window.location.href.split("/")[2]);
 const socket = new WebSocket(`ws://${window.location.href.split("/")[2]}`);
 socket.addEventListener("message", WebSocketHandler.handleSocketMessage);
@@ -416,16 +435,5 @@ socket.onopen = function(_ev) {
     console.log("WebSocket is open now.");
     WebSocketHandler.executeBuffer();
 };
-function createObject(type, name1) {
-    const object = new Loader.objectTypes[type]();
-    GameData.storeObject(object, name1);
-    WebSocketHandler.sendObjectsUpdate(object.id);
-    return object;
-}
-function play() {
-    GameData.frame++;
-    GameData.frame % hexiGame1.fps;
-    GameData.getObjectArrayFromName("player").forEach((player)=>{
-        player.playTick();
-    });
-}
+
+

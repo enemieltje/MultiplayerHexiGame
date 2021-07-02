@@ -3,9 +3,10 @@ export {Loader} from "./loader.ts";
 export {WebSocketHandler} from "./webSocketHandler.ts";
 export {GameObject} from "./baseObjects.ts";
 export {JS} from "../client/conversion.js";
-export {hexiGame} from "../game.ts";
 export {Player} from "../objects/player.ts";
 export {Dirt} from "../objects/dirt.ts";
+export {hexiGame, Game} from "../game.ts";
+// export {loadMapEditor, setupMapEditor} from "../mapEditor.ts";
 
 export type uuid = string;
 export type hexiObject = hexiData & Record<string, unknown>;

@@ -24,8 +24,6 @@
 	<h2>SomeGame</h2>
 
 	<p>available servers</p>
-	<script src="serverList"></script>
-
 	<table style="width:100%" id="serverTable">
 		<tr>
 			<th>ServerName</th>
@@ -38,6 +36,11 @@
 		<input type="submit" value="Create Server">
 	</form>
 
+	<form action="/mapEditor" method="POST">
+		<input type="submit" value="Map Editor">
+	</form>
+
+	<script src="serverList"></script>
 	<script>
 		function join (serverId)
 		{

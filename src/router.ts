@@ -7,7 +7,7 @@ export default class Router
 		this.routes = {};
 		//this.setRoutes('./src/server/html',0);
 	}
-	// This sets the url required to reach the html file
+	// This sets the url required to reach the html string
 	async setRoutes (path: string, subDir: number)
 	{
 		for await (const dirEntry of Deno.readDir(path))
@@ -17,7 +17,7 @@ export default class Router
 			{
 				this.setRoutes(path + '/' + dirEntry.name, subDir + 1);
 			}
-			//check if its a file and then add it to the routes
+			//check if its a string and then add it to the routes
 			if (dirEntry.isFile)
 			{
 				const regexPathObj = RegExp(/[^\\/]{1,}/g);

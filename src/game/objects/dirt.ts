@@ -19,7 +19,7 @@ export class Dirt extends GameObject
 		}
 	}
 
-	updateSprite ()
+	public updateSprite ()
 	{
 		let binary = "";
 		binary += GameData.getBlock(this.x, this.y - 1) == "Dirt" ? "1" : "0";

@@ -97,7 +97,7 @@ export default class HttpServer
 				req.respond({status: 418, body: "invalid req"});
 		}
 	}
-	private httpGetRequest (req: any)
+	private httpGetRequest (req: ServerRequest)
 	{
 		if (req.url == "/serverList")
 		{
@@ -115,7 +115,10 @@ export default class HttpServer
 				this.joinServer(req);
 				break;
 			case ("/newServer"):
-				this.newServer(req);
+				this.newServer(req, "host");
+				break;
+			case ("/mapEditor"):
+				this.newServer(req, "mapEditor");
 				break;
 			default:
 				this.respond(req, 418, "index.html");
@@ -176,7 +179,7 @@ export default class HttpServer
 		this.respond(req, 200, file, cookieSet);
 	}
 
-	private newServer (req: ServerRequest)
+	private newServer (req: ServerRequest, fileName: string)
 	{
 		const worldId = this.generateWorldId();
 		const world = new World(worldId);
@@ -184,7 +187,7 @@ export default class HttpServer
 		console.debug("new server created!");
 
 		const path = "./src/game/client";
-		const file = Deno.readFileSync(`${path}/host.html`);
+		const file = Deno.readFileSync(`${path}/${fileName}.html`);
 		const cookieSet = new Set<Cookie>();
 		const websocketIdCookie: Cookie = {name: "websocketId", value: this.generateWsId() + "", maxAge: 10};
 		const serverIdCookie: Cookie = {name: "serverId", value: worldId + "", maxAge: 10};
