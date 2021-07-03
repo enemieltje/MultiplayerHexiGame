@@ -14,7 +14,7 @@ export let hexiGame: any;
 
 export class Game
 {
-	static mouseObject: GameObject;
+	static mouseObject: TileObject;
 
 	public static startGame (setupFunction: () => void)
 	{
@@ -45,6 +45,7 @@ export class Game
 	public static setupHost ()
 	{
 		// create the instances of the objects
+		WebSocketHandler.sendServerRequest("world");
 		Loader.createObjects();
 
 		(GameData.getObjectFromName("player") as Player).defineMovementKeys();
@@ -57,6 +58,7 @@ export class Game
 	public static setupJoin ()
 	{
 		// create the instances of the objects
+		WebSocketHandler.sendServerRequest("world");
 		WebSocketHandler.sendWorldRequest();
 
 		(Game.createObject("Player", "player") as Player).defineMovementKeys();
@@ -68,10 +70,19 @@ export class Game
 	// here all the object instances get created and organised
 	public static setupMapEditor ()
 	{
-		Game.mouseObject = Game.createObject("Dirt", "mouseObject");
+		Game.mouseObject = Game.createObject("Dirt", "mouseObject") as TileObject;
+
+		hexiGame.pointer.tap = Game.placeMouseObject;
 
 		// Set the game state to `play` to start the game loop
 		hexiGame.state = Game.mapEditor;
+	}
+
+	public static placeMouseObject ()
+	{
+		const newObj = Game.createObject(Game.mouseObject.type, `mouse${Game.mouseObject.type}`) as TileObject;
+
+		newObj.move(Game.mouseObject.x, Game.mouseObject.y);
 	}
 
 	/**
@@ -114,8 +125,8 @@ export class Game
 		GameData.frame++;
 		GameData.frame % hexiGame.fps;
 
-		Game.mouseObject.hexiObject.x = hexiGame.pointer.x;
-		Game.mouseObject.hexiObject.y = hexiGame.pointer.y;
+		Game.mouseObject.hexiObject.x = Math.floor(hexiGame.pointer.x / Loader.gridSize.x) * Loader.gridSize.x;
+		Game.mouseObject.hexiObject.y = Math.floor(hexiGame.pointer.y / Loader.gridSize.y) * Loader.gridSize.y;
 
 		GameData.getObjectArray("tileObject").forEach((tileObject: GameObject) =>
 		{

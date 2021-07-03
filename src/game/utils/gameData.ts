@@ -53,11 +53,17 @@ export class GameData
 		if (object.category == "tileObject")
 		{
 			const tileObject = object as TileObject;
-			if (!this.tileObjectMap[tileObject.y]) this.tileObjectMap[tileObject.y] = [];
-			this.tileObjectMap[tileObject.y][tileObject.x] = tileObject.id;
+			this.storeTile(tileObject.id, tileObject.x, tileObject.y);
 		}
 
 		return object;
+	}
+
+	private static storeTile (uuid: uuid, x: number, y: number)
+	{
+		if (!this.tileObjectMap[y]) this.tileObjectMap[y] = [];
+		this.tileObjectMap[y][x] = uuid;
+		console.log(`storing object in tileMap at [${x}, ${y}]`);
 	}
 
 	static getObject (id: uuid | objectType | objectCategory | string, index?: number)
@@ -170,9 +176,15 @@ export class GameData
 		return objectArray;
 	}
 
-	static async deleteObjectFromId (objectId: uuid)
+	static moveTile (oldX: number, oldY: number, newX: number, newY: number)
 	{
-		const hexiObject = await this.gameObjects[objectId].hexiObject;
+		const uuid = this.tileObjectMap[oldY].splice(oldX, 1)[0];
+		this.storeTile(uuid, newX, newY);
+	}
+
+	static deleteObjectFromId (objectId: uuid)
+	{
+		const hexiObject = this.gameObjects[objectId].hexiObject;
 		hexiObject.remove();
 		delete this.gameObjects[objectId];
 	}

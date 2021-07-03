@@ -37,10 +37,15 @@ class GameData
 		if (object.category == "tileObject")
 		{
 			const tileObject = object;
-			if (!this.tileObjectMap[tileObject.y]) this.tileObjectMap[tileObject.y] = [];
-			this.tileObjectMap[tileObject.y][tileObject.x] = tileObject.id;
+			this.storeTile(tileObject.id, tileObject.x, tileObject.y);
 		}
 		return object;
+	}
+	static storeTile (uuid, x, y)
+	{
+		if (!this.tileObjectMap[y]) this.tileObjectMap[y] = [];
+		this.tileObjectMap[y][x] = uuid;
+		console.log(`storing object in tileMap at [${x}, ${y}]`);
 	}
 	static getObject (id, index)
 	{
@@ -119,9 +124,14 @@ class GameData
 		});
 		return objectArray;
 	}
-	static async deleteObjectFromId (objectId)
+	static moveTile (oldX, oldY, newX, newY)
 	{
-		const hexiObject = await this.gameObjects[objectId].hexiObject;
+		const uuid = this.tileObjectMap[oldY].splice(oldX, 1)[0];
+		this.storeTile(uuid, newX, newY);
+	}
+	static deleteObjectFromId (objectId)
+	{
+		const hexiObject = this.gameObjects[objectId].hexiObject;
 		hexiObject.remove();
 		delete this.gameObjects[objectId];
 	}
@@ -207,7 +217,6 @@ class WebSocketHandler
 			socket.send(JSON.stringify(message));
 			delete this.messageBuffer[i];
 		});
-		WebSocketHandler.sendServerRequest("world");
 	}
 	static sendServerRequest (name)
 	{
@@ -366,6 +375,72 @@ class GameObject
 	{
 	}
 }
+class TileObject extends GameObject
+{
+	category = "tileObject";
+	map = [
+		15,
+		14,
+		3,
+		2,
+		12,
+		13,
+		0,
+		1,
+		11,
+		10,
+		7,
+		6,
+		8,
+		9,
+		4,
+		5
+	];
+	constructor (name1, texture2)
+	{
+		super(name1, texture2);
+		this.useTileset = true;
+		this.updateSprite();
+	}
+	get x ()
+	{
+		return Math.floor(this.hexiObject.x / Loader.gridSize.x);
+	}
+	set x (x)
+	{
+		this.hexiObject.x = Math.floor(x) * Loader.gridSize.x;
+	}
+	get y ()
+	{
+		return Math.floor(this.hexiObject.y / Loader.gridSize.y);
+	}
+	set y (y)
+	{
+		this.hexiObject.y = Math.floor(y) * Loader.gridSize.y;
+	}
+	move (x, y)
+	{
+		GameData.moveTile(this.x, this.y, x, y);
+		this.x = x;
+		this.y = y;
+	}
+	updateSprite ()
+	{
+		let binary = "";
+		binary += GameData.getTile(this.x, this.y - 1) !== undefined ? "1" : "0";
+		binary += GameData.getTile(this.x + 1, this.y) !== undefined ? "1" : "0";
+		binary += GameData.getTile(this.x, this.y + 1) !== undefined ? "1" : "0";
+		binary += GameData.getTile(this.x - 1, this.y) !== undefined ? "1" : "0";
+		const dec = parseInt(binary, 2);
+		let index = this.map[dec];
+		if (index === undefined) index = dec;
+		this.hexiObject.show(index);
+		this.hexiObject.scale = {
+			x: 2,
+			y: 2
+		};
+	}
+}
 class Player extends GameObject
 {
 	type = "Player";
@@ -448,68 +523,6 @@ class Player extends GameObject
 	}
 }
 Loader.objectTypes.Player = Player;
-class TileObject extends GameObject
-{
-	category = "tileObject";
-	map = [
-		15,
-		14,
-		3,
-		2,
-		12,
-		13,
-		0,
-		1,
-		11,
-		10,
-		7,
-		6,
-		8,
-		9,
-		4,
-		5
-	];
-	constructor (name1, texture2)
-	{
-		super(name1, texture2);
-		this.useTileset = true;
-		this.updateSprite();
-	}
-	get x ()
-	{
-		return Math.floor(this.hexiObject.x / Loader.gridSize.x);
-	}
-	set x (x)
-	{
-		this.hexiObject.x = Math.floor(x) * Loader.gridSize.x;
-	}
-	get y ()
-	{
-		return Math.floor(this.hexiObject.y / Loader.gridSize.y);
-	}
-	set y (y)
-	{
-		this.hexiObject.y = Math.floor(y) * Loader.gridSize.y;
-	}
-	updateSprite ()
-	{
-		let binary = "";
-		console.log(GameData.getTile(this.x, this.y - 1));
-		binary += GameData.getTile(this.x, this.y - 1) !== undefined ? "1" : "0";
-		binary += GameData.getTile(this.x + 1, this.y) !== undefined ? "1" : "0";
-		binary += GameData.getTile(this.x, this.y + 1) !== undefined ? "1" : "0";
-		binary += GameData.getTile(this.x - 1, this.y) !== undefined ? "1" : "0";
-		const dec = parseInt(binary, 2);
-		console.log(dec);
-		let index = this.map[dec];
-		if (index === undefined) index = dec;
-		this.hexiObject.show(index);
-		this.hexiObject.scale = {
-			x: 2,
-			y: 2
-		};
-	}
-}
 class Dirt extends TileObject
 {
 	type = "Dirt";
@@ -555,12 +568,14 @@ class Game1
 	}
 	static setupHost ()
 	{
+		WebSocketHandler.sendServerRequest("world");
 		Loader.createObjects();
 		GameData.getObjectFromName("player").defineMovementKeys();
 		hexiGame1.state = Game1.play;
 	}
 	static setupJoin ()
 	{
+		WebSocketHandler.sendServerRequest("world");
 		WebSocketHandler.sendWorldRequest();
 		Game1.createObject("Player", "player").defineMovementKeys();
 		hexiGame1.state = Game1.play;
@@ -568,7 +583,13 @@ class Game1
 	static setupMapEditor ()
 	{
 		Game1.mouseObject = Game1.createObject("Dirt", "mouseObject");
+		hexiGame1.pointer.tap = Game1.placeMouseObject;
 		hexiGame1.state = Game1.mapEditor;
+	}
+	static placeMouseObject ()
+	{
+		const newObj = Game1.createObject(Game1.mouseObject.type, `mouse${Game1.mouseObject.type}`);
+		newObj.move(Game1.mouseObject.x, Game1.mouseObject.y);
 	}
 	static createObject (type, name)
 	{
@@ -594,8 +615,8 @@ class Game1
 	{
 		GameData.frame++;
 		GameData.frame % hexiGame1.fps;
-		Game1.mouseObject.hexiObject.x = hexiGame1.pointer.x;
-		Game1.mouseObject.hexiObject.y = hexiGame1.pointer.y;
+		Game1.mouseObject.hexiObject.x = Math.floor(hexiGame1.pointer.x / Loader.gridSize.x) * Loader.gridSize.x;
+		Game1.mouseObject.hexiObject.y = Math.floor(hexiGame1.pointer.y / Loader.gridSize.y) * Loader.gridSize.y;
 		GameData.getObjectArray("tileObject").forEach((tileObject) =>
 		{
 			tileObject.updateSprite();

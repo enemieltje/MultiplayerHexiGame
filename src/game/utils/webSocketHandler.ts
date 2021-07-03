@@ -41,7 +41,6 @@ export class WebSocketHandler
 			socket.send(JSON.stringify(message));
 			delete this.messageBuffer[i];
 		});
-		WebSocketHandler.sendServerRequest("world");
 	}
 
 	/**

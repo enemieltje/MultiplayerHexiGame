@@ -1,7 +1,7 @@
 export {GameData} from "./gameData.ts";
 export {Loader} from "./loader.ts";
 export {WebSocketHandler} from "./webSocketHandler.ts";
-export {GameObject, TileObject} from "./baseObjects.ts";
+export {TileObject, GameObject} from "./baseObjects.ts";
 export {JS} from "../client/conversion.js";
 export {Player} from "../objects/player.ts";
 export {Dirt} from "../objects/dirt.ts";

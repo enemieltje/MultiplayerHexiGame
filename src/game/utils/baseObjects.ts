@@ -90,17 +90,22 @@ export class TileObject extends GameObject
 		this.hexiObject.y = Math.floor(y) * Loader.gridSize.y;
 	}
 
+	public move (x: number, y: number)
+	{
+		GameData.moveTile(this.x, this.y, x, y);
+		this.x = x;
+		this.y = y;
+	}
+
 	public updateSprite ()
 	{
 		let binary = "";
-		console.log(GameData.getTile(this.x, this.y - 1));
 		binary += GameData.getTile(this.x, this.y - 1) !== undefined ? "1" : "0";
 		binary += GameData.getTile(this.x + 1, this.y) !== undefined ? "1" : "0";
 		binary += GameData.getTile(this.x, this.y + 1) !== undefined ? "1" : "0";
 		binary += GameData.getTile(this.x - 1, this.y) !== undefined ? "1" : "0";
 
 		const dec = parseInt(binary, 2);
-		console.log(dec);
 		let index = this.map[dec];
 		if (index === undefined) index = dec;
 		this.hexiObject.show(index);
